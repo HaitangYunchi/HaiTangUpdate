@@ -40,13 +40,13 @@ namespace HaiTangUpdate
 {
     public class Update
     {
-        private const string Salt = "k3apRuJR2j388Yy5CWxfnXrHkwg3AvUntgVhuUMWBDXDEsyaeX7Ze3QbvmejbqSz";
+        private const string Salt = "k3apRuJR2j388Yy5CWxfnXrHkwg3AvUntgVhuUMWBDXDEsyaeX7Ze3QbvmejbqSz"; //生成机器码用的加密盐值
         private readonly HttpClient _httpClient = new HttpClient();
-        private string OpenApiUrl = "https://api.2018k.cn/v3/";
+        private string OpenApiUrl = "http://api.2018k.cn/v3/";
 
         public class Json
         {
-            [JsonPropertyName("code")] // 如果使用System.Text.Json则用 [JsonPropertyName("code")]
+            [JsonPropertyName("code")] 
             public int Code { get; set; }
 
             [JsonPropertyName("success")]
@@ -356,6 +356,7 @@ namespace HaiTangUpdate
         /// 获取机器码 cpu+主板 进行验证
         /// </summary>
         /// <returns>返回20位机器码，格式：XXXXX-XXXXX-XXXXX-XXXXX</returns>
+        
         public string GetMachineCode()
         {
             try
@@ -1350,7 +1351,7 @@ namespace HaiTangUpdate
             }
         }
         /// <summary>
-        /// 创建卡密  （ 程序实例ID，OpenID，卡密ID，机器码 ）
+        /// 解绑、换绑  （ 程序实例ID，OpenID，卡密ID，机器码 ）
         /// </summary>
         /// <param name="ID">程序实例ID</param>
         /// <param name="key">OpenID</param>
