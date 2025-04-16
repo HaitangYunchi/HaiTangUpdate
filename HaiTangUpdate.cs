@@ -1390,5 +1390,53 @@ namespace HaiTangUpdate
                 return responseContent;
             }
         }
+        /// <summary>
+        /// 获取剩余使用时间  （ 程序实例ID，OpenID，机器码 ）
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="key">OpenID</param>
+        /// <param name="Code">机器码</param>
+        /// <returns>永久返回-1，过期返回0，未注册返回1，其余返回时间戳，</returns>
+        public async Task<long> GetRemainingUsageTime(string ID, string key, string Code)
+        {
+            string _IsItEffective = await GetIsItEffective(ID, key,Code);
+            //string _numberOfDays = await GetNumberOfDays(ID, key, Code);
+            string _expirationDate = await GetExpirationDate(ID, key, Code);
+            
+            try
+            {
+                if (_IsItEffective == "y")
+                {
+                    if (_expirationDate == "")
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        long lastTimestamp = long.Parse(_expirationDate);
+                        long currentTimestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                        long timestamp = (lastTimestamp - currentTimestamp);
+                        if (timestamp > 0)
+                        {
+                            return timestamp;
+                        }
+                        else
+                        {
+                            return 0;
+                        }
+                    }
+                }
+                else 
+                {
+                    return 1;
+                }
+            }
+            catch 
+            {
+                return 0;
+            }
+
+        }
+       
     }
 }
