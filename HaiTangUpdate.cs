@@ -101,7 +101,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -114,7 +114,9 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
+                        //string JsonData = AesDecrypt(_JsonData.Data, key);
                         string JsonData = AesDecrypt(_JsonData.Data, key);
+                        
 
                         try
                         {
@@ -161,7 +163,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -212,7 +214,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -262,7 +264,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -312,7 +314,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -362,7 +364,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -412,7 +414,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -462,7 +464,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -512,7 +514,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -558,7 +560,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -604,7 +606,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -650,7 +652,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -696,7 +698,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -742,7 +744,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -792,7 +794,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={Uri.EscapeDataString(ID)}" + (string.IsNullOrEmpty(Code) ? "" : $"&machineCode={Uri.EscapeDataString(Code)}");
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={Uri.EscapeDataString(ID)}" + (string.IsNullOrEmpty(Code) ? "" : $"&machineCode={Uri.EscapeDataString(Code)}&isAPI=y");
 
                     try
                     {
@@ -852,7 +854,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -902,7 +904,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}";
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -948,7 +950,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建API请求URL
-                    string requestUrl = $"{apiUrl}getCloudVariables?softwareId={ID}";
+                    string requestUrl = $"{apiUrl}getCloudVariables?softwareId={ID}&isAPI=y";
 
                     // 发送GET请求
                     HttpResponseMessage response = await httpClient.GetAsync(requestUrl);
@@ -959,7 +961,7 @@ namespace HaiTangUpdate
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
                     // 解密数据
-                    string JsonData = AesDecrypt(_JsonData.Data, key);
+                    string JsonData = AesDecryptData(_JsonData.Data, key);
 
                     // 解析JSON数组
                     JArray jsonArray = JArray.Parse(JsonData);
@@ -991,7 +993,7 @@ namespace HaiTangUpdate
         {
             return await ExecuteApiRequest(async (apiUrl) =>
             {
-                string url = $"{apiUrl}activation?authId={authId}&softwareId={ID}&machineCode={Code}";
+                string url = $"{apiUrl}activation?authId={authId}&softwareId={ID}&machineCode={Code}&isAPI=y";
                 // 发送 GET 请求
                 HttpResponseMessage response = await _httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
@@ -1009,7 +1011,7 @@ namespace HaiTangUpdate
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 message = Uri.EscapeDataString(message);
-                string url = $"{apiUrl}messageSend?softwareId={ID}&message={message}";
+                string url = $"{apiUrl}messageSend?softwareId={ID}&message={message}&isAPI=y";
                 // 发送 GET 请求
                 HttpResponseMessage response = await _httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
@@ -1051,7 +1053,7 @@ namespace HaiTangUpdate
                 };
 
                 // 加密数据
-                string encodedCiphertext = EncryptData(data, key);
+                string encodedCiphertext = AesEncrypt(data, key);
 
                 // 发送请求
                 string url = $"{apiUrl}createNetworkAuthentication?info={Uri.EscapeDataString(encodedCiphertext)}&softwareId={ID}&isAPI=y";
@@ -1095,7 +1097,7 @@ namespace HaiTangUpdate
                 };
 
                 // 加密数据
-                string encodedCiphertext = EncryptData(data, key);
+                string encodedCiphertext = AesEncrypt(data, key);
                 // 发送请求
                 string url = $"{apiUrl}replaceBind?softwareId={ID}&info={Uri.EscapeDataString(encodedCiphertext)}&isAPI=y";
 
@@ -1164,109 +1166,8 @@ namespace HaiTangUpdate
                 return 0;
             }
 
-        }
-
-        /// <summary>
-        /// 解密data数据 (加密数据,OpenID)
-        /// </summary>
-        /// <returns>string 返回字符串格式</returns> 
-        public string AesDecrypt(string encryptedText, string secret)
-        {
-            // Base64解码
-            byte[] cipherData = Convert.FromBase64String(encryptedText);
-            if (cipherData.Length < 16)
-                throw new ArgumentException("Invalid encrypted text");
-
-            // 提取salt（8字节，从索引8开始）
-            byte[] saltData = new byte[8];
-            Array.Copy(cipherData, 8, saltData, 0, 8);
-
-            // 生成密钥和IV
-            GenerateKeyAndIV(saltData, Encoding.Default.GetBytes(secret), out byte[] key, out byte[] iv);
-
-            // 提取加密数据（从第16字节开始）
-            byte[] data = new byte[cipherData.Length - 16];
-            Array.Copy(cipherData, 16, data, 0, data.Length);
-
-            // AES解密
-            using (Aes aes = Aes.Create())
-            {
-                aes.Key = key;
-                aes.IV = iv;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-
-                using (ICryptoTransform decryptor = aes.CreateDecryptor())
-                using (MemoryStream ms = new MemoryStream(data))
-                using (CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
-                using (StreamReader sr = new StreamReader(cs, Encoding.UTF8))
-                {
-                    // 将UTF8解码结果转换为系统默认编码
-                    var utf8Result = sr.ReadToEnd();
-                    byte[] ansiBytes = Encoding.Default.GetBytes(utf8Result);
-                    var json = Encoding.Default.GetString(ansiBytes);
-                    var parsedJson = JsonConvert.DeserializeObject(json);
-                    return JsonConvert.SerializeObject(parsedJson, Newtonsoft.Json.Formatting.Indented);
-                }
-            }
-        }
-        /// <summary>
-        /// 加密data数据 (待加密数据,OpenID)
-        /// </summary>
-        /// <returns>string 返回Base64字符串格式</returns>
-        public string AesEncrypt(string text, string OpenID)
-        {
-            // 生成随机头（8字节）和盐（8字节）
-            byte[] header = GenerateRandomBytes(8);
-            byte[] salt = GenerateRandomBytes(8);
-
-            // 生成密钥和IV
-            GenerateKeyAndIV(salt, Encoding.Default.GetBytes(OpenID), out byte[] key, out byte[] iv);
-
-            // 加密数据
-            byte[] encryptedData = EncryptString(text, key, iv);
-
-            // 构建完整字节数组：[8头] + [8盐] + [加密数据]
-            byte[] cipherData = CombineBytes(header, salt, encryptedData);
-
-            return Convert.ToBase64String(cipherData);
-        }
-        private byte[] GenerateRandomBytes(int length)
-        {
-            byte[] bytes = new byte[length];
-#pragma warning disable SYSLIB0023
-            using (RNGCryptoServiceProvider rng = new())
-            {
-                rng.GetBytes(bytes);
-            }
-#pragma warning restore SYSLIB0023
-            return bytes;
-        }
-        private byte[] EncryptString(string plainText, byte[] key, byte[] iv)
-        {
-            using (Aes aes = Aes.Create())
-            {
-                aes.Key = key;
-                aes.IV = iv;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-
-                // 注意编码转换：明文转UTF8
-                byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
-
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
-                    {
-                        cs.Write(plainBytes, 0, plainBytes.Length);
-                        cs.FlushFinalBlock();
-                    }
-                    return ms.ToArray();
-                }
-            }
-        }
-
-        public string EncryptData(object data, string key)
+        }       
+        public string AesEncrypt(object data, string key)
         {
             // 将数据转换为JSON字符串
             string plaintext = JsonConvert.SerializeObject(data);
@@ -1299,38 +1200,37 @@ namespace HaiTangUpdate
                 }
             }
         }
-        public string DecryptData(string encryptedData, string key)
+        public string AesDecrypt(string encryptedData, string key)
         {
-            // 将Base64字符串转换为字节数组
-            byte[] cipherText = Convert.FromBase64String(encryptedData);
 
-            // 使用AES解密
+            // 将Base64密文转换为字节数组
+            byte[] cipherBytes = Convert.FromBase64String(encryptedData);
+
+            // 创建AES解密器
             using (Aes aesAlg = Aes.Create())
             {
-                aesAlg.Key = HexStringToByteArray(key);
-                aesAlg.IV = new byte[16]; // 16字节全零IV，必须与加密时一致
+                aesAlg.Key = HexStringToByteArray(key); ;
+                aesAlg.IV = new byte[16];
                 aesAlg.Mode = CipherMode.CBC;
                 aesAlg.Padding = PaddingMode.PKCS7;
 
                 // 创建解密器
                 ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
 
-                // 解密数据
-                using (MemoryStream msDecrypt = new MemoryStream(cipherText))
+                // 执行解密
+                using (MemoryStream msDecrypt = new MemoryStream(cipherBytes))
                 {
                     using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
                     {
                         using (StreamReader srDecrypt = new StreamReader(csDecrypt))
                         {
-                            // 读取解密后的字符串
-                            var decrypted = srDecrypt.ReadToEnd();
-                            var parsedJson = JsonConvert.DeserializeObject(decrypted);
-                            return JsonConvert.SerializeObject(parsedJson, Newtonsoft.Json.Formatting.Indented);
-
+                            // 返回解密后的UTF8字符串
+                            return srDecrypt.ReadToEnd();
                         }
                     }
                 }
             }
+
         }
 
         #endregion
@@ -1497,76 +1397,17 @@ namespace HaiTangUpdate
 
             throw new Exception($"API请求失败。最后错误: {lastException?.Message}", lastException);
         }
-        
-        private void GenerateKeyAndIV(byte[] saltData, byte[] password, out byte[] key, out byte[] iv)
-        {
-            StringBuilder str = new StringBuilder();
-            string md5str = "";
 
-            // 三次MD5迭代
-            for (int i = 0; i < 3; i++)
-            {
-                // 组合前次MD5结果+密码+salt
-                byte[] previousMd5 = HexStringToBytes(md5str);
-                byte[] combined = CombineBytes(previousMd5, password, saltData);
-
-                // 计算MD5
-                using (MD5 md5 = MD5.Create())
-                {
-                    byte[] hash = md5.ComputeHash(combined);
-                    md5str = BytesToHexString(hash);
-                    str.Append(md5str);
-                }
-            }
-
-            // 生成最终字节数组
-            byte[] resultBytes = HexStringToBytes(str.ToString());
-
-            // 提取密钥和IV
-            key = new byte[32];
-            iv = new byte[16];
-            Array.Copy(resultBytes, 0, key, 0, 32);
-            Array.Copy(resultBytes, 32, iv, 0, 16);
-        }
-        // 辅助函数：十六进制字符串转字节数组
-        private byte[] HexStringToBytes(string hex)
+        // 辅助方法：将十六进制字符串转换为字节数组
+        private static byte[] HexStringToByteArray(string hex)
         {
             if (hex.Length % 2 != 0)
-                throw new ArgumentException("Hexadecimal string must have even length");
+            {
+                throw new ArgumentException("十六进制字符串长度必须是偶数");
+            }
 
             byte[] bytes = new byte[hex.Length / 2];
             for (int i = 0; i < hex.Length; i += 2)
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-            return bytes;
-        }
-        // 辅助函数：字节数组转十六进制字符串
-        private string BytesToHexString(byte[] bytes)
-        {
-            return BitConverter.ToString(bytes).Replace("-", "").ToLowerInvariant();
-        }
-        // 辅助函数：组合多个字节数组
-        private byte[] CombineBytes(params byte[][] arrays)
-        {
-            int length = 0;
-            foreach (byte[] array in arrays)
-                length += array.Length;
-
-            byte[] combined = new byte[length];
-            int offset = 0;
-            foreach (byte[] array in arrays)
-            {
-                Array.Copy(array, 0, combined, offset, array.Length);
-                offset += array.Length;
-            }
-            return combined;
-        }
-        
-
-        private byte[] HexStringToByteArray(string hex)
-        {
-            int numberChars = hex.Length;
-            byte[] bytes = new byte[numberChars / 2];
-            for (int i = 0; i < numberChars; i += 2)
             {
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
             }
@@ -1649,6 +1490,110 @@ namespace HaiTangUpdate
 
             string timestamp = DateTime.Now.ToString("yyyy-MMdd-HHmm");
             return $"ERR-{timestamp.Substring(0, 9)}-{Guid.NewGuid().ToString("N").Substring(0, 5)}";
+        }
+
+
+        private string AesDecryptData(string encryptedText, string secret)
+        {
+            // Base64解码
+            byte[] cipherData = Convert.FromBase64String(encryptedText);
+            if (cipherData.Length < 16)
+                throw new ArgumentException("Invalid encrypted text");
+
+            // 提取salt（8字节，从索引8开始）
+            byte[] saltData = new byte[8];
+            Array.Copy(cipherData, 8, saltData, 0, 8);
+
+            // 生成密钥和IV
+            GenerateKeyAndIV(saltData, Encoding.Default.GetBytes(secret), out byte[] key, out byte[] iv);
+
+            // 提取加密数据（从第16字节开始）
+            byte[] data = new byte[cipherData.Length - 16];
+            Array.Copy(cipherData, 16, data, 0, data.Length);
+
+            // AES解密
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = key;
+                aes.IV = iv;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using (ICryptoTransform decryptor = aes.CreateDecryptor())
+                using (MemoryStream ms = new MemoryStream(data))
+                using (CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                using (StreamReader sr = new StreamReader(cs, Encoding.UTF8))
+                {
+                    // 将UTF8解码结果转换为系统默认编码
+                    var utf8Result = sr.ReadToEnd();
+                    byte[] ansiBytes = Encoding.Default.GetBytes(utf8Result);
+                    var json = Encoding.Default.GetString(ansiBytes);
+                    var parsedJson = JsonConvert.DeserializeObject(json);
+                    return JsonConvert.SerializeObject(parsedJson, Newtonsoft.Json.Formatting.Indented);
+                }
+            }
+        }
+        private void GenerateKeyAndIV(byte[] saltData, byte[] password, out byte[] key, out byte[] iv)
+        {
+            StringBuilder str = new StringBuilder();
+            string md5str = "";
+
+            // 三次MD5迭代
+            for (int i = 0; i < 3; i++)
+            {
+                // 组合前次MD5结果+密码+salt
+                byte[] previousMd5 = HexStringToBytes(md5str);
+                byte[] combined = CombineBytes(previousMd5, password, saltData);
+
+                // 计算MD5
+                using (MD5 md5 = MD5.Create())
+                {
+                    byte[] hash = md5.ComputeHash(combined);
+                    md5str = BytesToHexString(hash);
+                    str.Append(md5str);
+                }
+            }
+
+            // 生成最终字节数组
+            byte[] resultBytes = HexStringToBytes(str.ToString());
+
+            // 提取密钥和IV
+            key = new byte[32];
+            iv = new byte[16];
+            Array.Copy(resultBytes, 0, key, 0, 32);
+            Array.Copy(resultBytes, 32, iv, 0, 16);
+        }
+        // 辅助函数：十六进制字符串转字节数组
+        private byte[] HexStringToBytes(string hex)
+        {
+            if (hex.Length % 2 != 0)
+                throw new ArgumentException("Hexadecimal string must have even length");
+
+            byte[] bytes = new byte[hex.Length / 2];
+            for (int i = 0; i < hex.Length; i += 2)
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            return bytes;
+        }
+        // 辅助函数：字节数组转十六进制字符串
+        private string BytesToHexString(byte[] bytes)
+        {
+            return BitConverter.ToString(bytes).Replace("-", "").ToLowerInvariant();
+        }
+        // 辅助函数：组合多个字节数组
+        private byte[] CombineBytes(params byte[][] arrays)
+        {
+            int length = 0;
+            foreach (byte[] array in arrays)
+                length += array.Length;
+
+            byte[] combined = new byte[length];
+            int offset = 0;
+            foreach (byte[] array in arrays)
+            {
+                Array.Copy(array, 0, combined, offset, array.Length);
+                offset += array.Length;
+            }
+            return combined;
         }
         #endregion
 
