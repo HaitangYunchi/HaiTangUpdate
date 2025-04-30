@@ -29,15 +29,20 @@
 	await up.MessageSend("2018K程序实例ID", "要发送的消息");//发送消息
 	up.GetMachineCode();// 获取机器码 cpu+主板 返回20位机器码，格式：XXXXX-XXXXX-XXXXX-XXXXX
 	await up.CreateNetworkAuthentication("卡密天数", "卡密备注","2018K程序实例ID","你的OpenID");//创建卡密
-	long timestamp = up.GetRemainingUsageTime("2018K程序实例ID", "你的OpenID","机器码");      // 获取卡密剩余时间（类型long  返回值：永久-1，过期0，未注册1，其他返回时间戳）
+
+    // 获取卡密剩余时间（类型long  返回值：永久-1，过期0，未注册1，其他返回时间戳）
+	long timestamp = up.GetRemainingUsageTime("2018K程序实例ID", "你的OpenID","机器码");      
         
+
         // 使用示例
         try
         {
             // 假设我们要检查更新
             string currentVersion = "1.0.0"; // 当前程序版本
             string latestVersion =  await up.GetVersionNumber("2018K程序实例ID", "你的OpenID");
-            
+
+            //也可以把字符串变成版本然后比大小 Version _latestVersion = New(latestVersion);
+
             if (latestVersion != currentVersion)
             {
                 string downloadUrl =  await up.GetDownloadLink("2018K程序实例ID", "你的OpenID");
@@ -57,17 +62,17 @@
         try
         {
 			var timestamp = await up.GetRemainingUsageTime("2018K程序实例ID", "你的OpenID","机器码");
-			if (timestamp == 0)
+			if (timestamp == -1)
+			{
+				Console.WriteLine("永久");
+			}
+			else if (timestamp == 0)
 			{
 				Console.WriteLine("已过期");
 			}
-			else if (timestamp == 1)
+				else if (timestamp == 1)
 			{
 				Console.WriteLine("未激活");
-			}
-				else if (timestamp == -1)
-			{
-				Console.WriteLine("永久");
 			}
 			else
 			{
@@ -88,15 +93,15 @@
         
 	目前就差换绑没做，这段时间没空，等有空了再更新吧，本次更新是更新了方法调用参数，加了机器码的调用
 	更新了自动检测api地址，优先使用默认地址，默认地址不通的时候在枚举其他地址，并把检测到健康的地址缓存起来（缓存时间5分钟）
-	private const string DefaultApiUrl = "http://api.2018k.cn/v3/";
+	private const string DefaultApiUrl = "http://api.2018k.cn";
 	private static string OpenApiUrl = DefaultApiUrl;
 	// 可用的API地址列表，用于故障转移
 	private static readonly string[] ApiAddressList =
 	{
-		"http://api.2018k.cn/v3/",
-		"http://api2.2018k.cn/v3/",
-		"http://api3.2018k.cn/v3/",
-		"http://api4.2018k.cn/v3/"
+		"api.2018k.cn",
+		"api2.2018k.cn",
+		"api3.2018k.cn",
+		"api4.2018k.cn"
 	};
 
 	
