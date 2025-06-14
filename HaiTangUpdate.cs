@@ -35,6 +35,8 @@ using Newtonsoft.Json.Linq;
 using System.Net;
 using JsonException = System.Text.Json.JsonException;
 using System.Net.Http;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+using static HaiTangUpdate.JsonHelper;
 
 namespace HaiTangUpdate
 {
@@ -61,6 +63,7 @@ namespace HaiTangUpdate
         private static readonly TimeSpan healthCacheDuration = TimeSpan.FromMinutes(5);
         // 锁对象，确保线程安全
         private static readonly object lockObject = new object();
+
         #endregion
         #region 公有方法
         /// <summary>
@@ -114,8 +117,8 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        //string JsonData = AesDecrypt(_JsonData.Data, key);
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        //string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
                         
 
                         try
@@ -176,7 +179,7 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
@@ -227,7 +230,7 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
@@ -277,7 +280,7 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
@@ -327,7 +330,7 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
@@ -377,7 +380,7 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
@@ -427,7 +430,7 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
@@ -477,7 +480,7 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
@@ -527,7 +530,7 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
@@ -552,10 +555,11 @@ namespace HaiTangUpdate
         /// <param name="ID">程序实例ID</param>
         /// <param name="key">OpenID</param>
         /// <param name="Code">机器码</param>
-        /// <returns>string 返回卡密当前状态是否有效, 一般为判断软件是否注册 True (y) , False (n)</returns>
-        public async Task<string> GetIsItEffective(string ID, string key, string Code)
+        /// <returns>bool 返回卡密当前状态是否有效, 一般为判断软件是否注册 True  , False </returns>
+        public async Task<bool> GetIsItEffective(string ID, string key, string Code)
         {
-            return await ExecuteApiRequest(async (apiUrl) =>
+
+            string response = await ExecuteApiRequest(async (apiUrl) =>
             {
                 using (HttpClient httpClient = new())
                 {
@@ -573,7 +577,7 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
@@ -590,7 +594,15 @@ namespace HaiTangUpdate
                         throw new Exception($"处理卡密状出错: {ex.Message}");
                     }
                 }
-            });   
+            });
+            if (response == "n")
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
         /// <summary>
         /// 获取卡密过期时间戳 （ 程序实例ID，OpenID，机器码 ）
@@ -601,6 +613,7 @@ namespace HaiTangUpdate
         /// <returns>string 返回软件卡密时间戳</returns>
         public async Task<string> GetExpirationDate(string ID, string key, string Code)
         {
+            var _IsItEffective = await GetIsItEffective(ID, key, Code);
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 using (HttpClient httpClient = new())
@@ -619,11 +632,20 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.ExpirationDate;
+                        if (_IsItEffective == true && string.IsNullOrEmpty(result.ExpirationDate))
+                        {
+
+                            return "7258089599000";
+                        }
+                        else
+                        {
+                            return result.ExpirationDate;
+                        }
+                        
                     }
                     catch (HttpRequestException ex)
                     {
@@ -665,7 +687,7 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
@@ -695,6 +717,7 @@ namespace HaiTangUpdate
         {
             return await ExecuteApiRequest(async (apiUrl) =>
             {
+                var _IsItEffective = await GetIsItEffective(ID, key, Code);
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
@@ -711,11 +734,19 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.NumberOfDays;
+                        if (_IsItEffective == true && string.IsNullOrEmpty(result.NumberOfDays))
+                        {
+
+                            return "99999";
+                        }
+                        else
+                        {
+                            return result.NumberOfDays;
+                        }
                     }
                     catch (HttpRequestException ex)
                     {
@@ -757,7 +788,7 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
@@ -811,7 +842,7 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string decryptedData = AesDecrypt(_JsonData.Data, key);
+                        string decryptedData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化解密后的数据
                         var result = JsonConvert.DeserializeObject<Json>(decryptedData);
@@ -842,14 +873,14 @@ namespace HaiTangUpdate
         /// <param name="ID">程序实例ID</param>
         /// <param name="key">OpenID</param>
         /// <param name="Code">机器码 可空</param>
-        /// <returns>string 返回软件是否强制更新，机器码可空</returns>
-        public async Task<string> GetMandatoryUpdate(string ID, string key, string Code = null)
+        /// <returns>bool 返回软件是否强制更新，机器码可空</returns>
+        public async Task<bool> GetMandatoryUpdate(string ID, string key, string Code = null)
         {
             if (string.IsNullOrEmpty(Code))
             {
                 Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
             }
-            return await ExecuteApiRequest(async (apiUrl) =>
+            string response = await ExecuteApiRequest(async (apiUrl) =>
             {
                 using (HttpClient httpClient = new())
                 {
@@ -867,7 +898,7 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
@@ -885,6 +916,14 @@ namespace HaiTangUpdate
                     }
                 }
             });
+            if (response == "n")
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
         /// <summary>
         /// 获取软件MD5 （ 程序实例ID，OpenID，机器码 [null] ）
@@ -917,7 +956,7 @@ namespace HaiTangUpdate
                         var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.Data, key);
+                        string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<Json>(JsonData);
@@ -961,7 +1000,7 @@ namespace HaiTangUpdate
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
                     // 解密数据
-                    string JsonData = AesDecryptData(_JsonData.Data, key);
+                    string JsonData = AesDecryptData(_JsonData.data, key);
 
                     // 解析JSON数组
                     JArray jsonArray = JArray.Parse(JsonData);
@@ -1085,14 +1124,14 @@ namespace HaiTangUpdate
         /// <param name="authId">卡密ID</param>
         /// <param name="Code">机器码</param>
         /// <returns>返回JSON</returns>
-        public async Task<string> ReplaceBind(string ID, string key, string authId, string Code)
+        public async Task<string> ReplaceBind(string ID, string key, string AuthId, string Code)
         {
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 // 构建请求数据
                 var data = new
                 {
-                    authId,
+                    authId = AuthId,
                     machineCode = Code
                 };
 
@@ -1129,13 +1168,13 @@ namespace HaiTangUpdate
         /// <returns>永久返回-1，过期返回0，未注册返回1，其余返回时间戳，</returns>
         public async Task<long> GetRemainingUsageTime(string ID, string key, string Code)
         {
-            string _IsItEffective = await GetIsItEffective(ID, key,Code);
+            bool _IsItEffective = await GetIsItEffective(ID, key,Code);
             //string _numberOfDays = await GetNumberOfDays(ID, key, Code);
             string _expirationDate = await GetExpirationDate(ID, key, Code);
             
             try
             {
-                if (_IsItEffective == "y")
+                if (_IsItEffective == true)
                 {
                     if (_expirationDate == "")
                     {
@@ -1166,7 +1205,616 @@ namespace HaiTangUpdate
                 return 0;
             }
 
-        }       
+        }
+
+        /// <summary>
+        /// 获取网络验证码  （ 程序实例ID，OpenID ）
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="key">OpenID</param>
+        /// <returns>返回验证码</returns>
+        public async Task<string> GetNetworkCode(string ID, string key)
+        {
+            return await ExecuteApiRequest(async (apiUrl) =>
+            {
+                var requestData = new
+                {
+                    softwareId = ID
+                };
+
+                // 序列化为 JSON
+                string json = JsonSerializer.Serialize(requestData);
+
+                // 使用 HttpClient 发送 POST 请求
+                using (HttpClient client = new HttpClient())
+                {
+                    // 设置请求头（Content-Type）
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                    // 构造 StringContent（请求体）
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // 发送 POST 请求
+                    HttpResponseMessage response = await client.PostAsync(apiUrl+ "captcha", content);              
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                    string JsonData = AesDecryptData(_JsonData.data, key);
+                    return JsonData;
+                    
+                }
+            });
+        }
+        /// <summary>
+        /// 用户注册  （ 程序实例ID，邮箱，密码，昵称，验证码）
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="email">邮箱</param>
+        /// <param name="password">密码</param>
+        /// <param name="avatarUrl">用户头像</param>
+        /// <param name="nickName">昵称</param>
+        /// <param name="captcha">验证码</param>
+        /// <returns>返回 布尔类型 True 或 Fales 【昵称，头像，验证码】可空</returns>
+        public async Task<bool> CustomerRegister(string ID,string email, string password,string nickName = null, string avatarUrl = null, string captcha = null)
+        {
+
+            string _data = await ExecuteApiRequest(async (apiUrl) =>
+            {
+                var requestData = new
+                {
+                    softwareId = ID,
+                    email = email,
+                    password = password, 
+                    avatarUrl = avatarUrl, 
+                    nickName = nickName, 
+                    captcha = captcha
+
+                };
+
+                // 序列化为 JSON
+                string json = JsonSerializer.Serialize(requestData);
+
+                // 使用 HttpClient 发送 POST 请求
+                using (HttpClient client = new HttpClient())
+                {
+                    // 设置请求头（Content-Type）
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                    // 构造 StringContent（请求体）
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // 发送 POST 请求
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerRegister", content);
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                    string JsonData =_JsonData.Success.ToString();
+                    return JsonData;
+                  }
+            });
+            if (bool.TryParse(_data, out bool result))
+                return result;
+            return false; // 默认值（解析失败时）
+        }
+        /// <summary>
+        /// 用户登录  （ 程序实例ID，OpenID,邮箱，密码）
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="key">OpenID/param>
+        /// <param name="email">邮箱</param>
+        /// <param name="password">密码</param>
+        /// <returns>返回布尔类型</returns>
+        public async Task<bool> CustomerLogon(string ID,string key, string email, string password)
+        {
+            string _result;
+            try
+            {
+                long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                _result = await ExecuteApiRequest(async (apiUrl) =>
+                {
+                    var requestData = new
+                    {
+                        softwareId = ID,
+                        email = email,
+                        password = password,
+                        timeStamp = timestamp
+
+                    };
+
+                    // 序列化为 JSON
+                    string json = JsonSerializer.Serialize(requestData);
+
+                    // 使用 HttpClient 发送 POST 请求
+                    using (HttpClient client = new HttpClient())
+                    {
+                        // 设置请求头（Content-Type）
+                        client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                        // 构造 StringContent（请求体）
+                        var content = new StringContent(json, Encoding.UTF8, "application/json");
+                        // 发送 POST 请求
+                        HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            Console.WriteLine($"请求失败！HTTP状态码: {response.StatusCode}");
+                        }
+                        string responseBody = await response.Content.ReadAsStringAsync();
+                        JsonUser result = JsonConvert.DeserializeObject<JsonUser>(responseBody);
+                        // 检查登录是否成功
+                        if (result == null || result.Success == false || result.Data == null || result.Data.CustomerId == null)
+                        {
+                            string errorMsg = (result?.Message ?? "未知错误");
+                            return  "false";
+                            throw new Exception(errorMsg);
+                        }
+                        string decryptedData = AesDecryptData(result.Data.TimeCrypt, key);
+                        string okMsg = (result?.Message);
+                        string JsonData = result.Success.ToString();
+                        return JsonData;
+
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"程序异常: {ex.Message}");
+            }
+            
+
+            if (bool.TryParse(_result, out bool result))
+                return result;
+            return false; // 默认值（解析失败时）
+        }
+
+        /// <summary>
+        /// 获取用户所有信息  （ 程序实例ID，OpenID,邮箱，密码）
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="key">OpenID/param>
+        /// <param name="email">邮箱</param>
+        /// <param name="password">密码</param>
+        /// <returns>返回JSON</returns>
+        public async Task<string> GetUserInfo(string ID, string key, string email, string password)
+        {
+            bool _logon = await CustomerLogon(ID, key, email, password);
+            if (_logon == false)
+            {
+                return _worring;
+            }
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            return await ExecuteApiRequest(async (apiUrl) =>
+            {
+                var requestData = new
+                {
+                    softwareId = ID,
+                    email = email,
+                    password = password,
+                    timeStamp = timestamp
+
+                };
+
+                // 序列化为 JSON
+                string json = JsonSerializer.Serialize(requestData);
+
+                // 使用 HttpClient 发送 POST 请求
+                using (HttpClient client = new HttpClient())
+                {
+                    // 设置请求头（Content-Type）
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                    // 构造 StringContent（请求体）
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // 发送 POST 请求
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
+                    string result = JsonConvert.SerializeObject(_JsonData.Data, Formatting.Indented);
+                    return result;
+
+                }
+            });
+        }
+        /// <summary>
+        /// 获取用户ID  （ 程序实例ID，OpenID,邮箱，密码）
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="key">OpenID/param>
+        /// <param name="email">邮箱</param>
+        /// <param name="password">密码</param>
+        /// <returns>返回JSON</returns>
+        public async Task<string> GetUserId(string ID, string key, string email, string password)
+        {
+            bool _logon = await CustomerLogon(ID, key, email, password);
+            if (_logon == false)
+            {
+                return _worring;
+            }
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            return await ExecuteApiRequest(async (apiUrl) =>
+            {
+                var requestData = new
+                {
+                    softwareId = ID,
+                    email = email,
+                    password = password,
+                    timeStamp = timestamp
+
+                };
+
+                // 序列化为 JSON
+                string json = JsonSerializer.Serialize(requestData);
+
+                // 使用 HttpClient 发送 POST 请求
+                using (HttpClient client = new HttpClient())
+                {
+                    // 设置请求头（Content-Type）
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                    // 构造 StringContent（请求体）
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // 发送 POST 请求
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);                   
+                    string result = _JsonData.Data.CustomerId;
+                    return result;
+
+                }
+            });
+        }
+        /// <summary>
+        /// 获取用户头像  （ 程序实例ID，OpenID,邮箱，密码）
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="key">OpenID/param>
+        /// <param name="email">邮箱</param>
+        /// <param name="password">密码</param>
+        /// <returns>返回JSON</returns>
+        public async Task<string> GetUserAvatar(string ID, string key, string email, string password)
+        {
+            bool _logon = await CustomerLogon(ID, key, email, password);
+            if (_logon == false)
+            {
+                return _worring;
+            }
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            return await ExecuteApiRequest(async (apiUrl) =>
+            {
+                var requestData = new
+                {
+                    softwareId = ID,
+                    email = email,
+                    password = password,
+                    timeStamp = timestamp
+
+                };
+
+                // 序列化为 JSON
+                string json = JsonSerializer.Serialize(requestData);
+
+                // 使用 HttpClient 发送 POST 请求
+                using (HttpClient client = new HttpClient())
+                {
+                    // 设置请求头（Content-Type）
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                    // 构造 StringContent（请求体）
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // 发送 POST 请求
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
+                    string result = _JsonData.Data.AvatarUrl;
+                    return result;
+
+                }
+            });
+        }
+        /// <summary>
+        /// 获取用户昵称  （ 程序实例ID，OpenID,邮箱，密码）
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="key">OpenID/param>
+        /// <param name="email">邮箱</param>
+        /// <param name="password">密码</param>
+        /// <returns>返回JSON</returns>
+        public async Task<string> GetUserNickname(string ID, string key, string email, string password)
+        {
+            bool _logon = await CustomerLogon(ID, key, email, password);
+            if (_logon == false)
+            {
+                return _worring;
+            }
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            return await ExecuteApiRequest(async (apiUrl) =>
+            {
+                var requestData = new
+                {
+                    softwareId = ID,
+                    email = email,
+                    password = password,
+                    timeStamp = timestamp
+
+                };
+
+                // 序列化为 JSON
+                string json = JsonSerializer.Serialize(requestData);
+
+                // 使用 HttpClient 发送 POST 请求
+                using (HttpClient client = new HttpClient())
+                {
+                    // 设置请求头（Content-Type）
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                    // 构造 StringContent（请求体）
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // 发送 POST 请求
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
+                    string result = _JsonData.Data.Nickname;
+                    return result;
+
+                }
+            });
+        }
+        /// <summary>
+        /// 获取用户邮箱  （ 程序实例ID，OpenID,邮箱，密码）
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="key">OpenID/param>
+        /// <param name="email">邮箱</param>
+        /// <param name="password">密码</param>
+        /// <returns>返回JSON</returns>
+        public async Task<string> GetUserEmail(string ID, string key, string email, string password)
+        {
+            bool _logon = await CustomerLogon(ID, key, email, password);
+            if (_logon == false)
+            {
+                return _worring;
+            }
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            return await ExecuteApiRequest(async (apiUrl) =>
+            {
+                var requestData = new
+                {
+                    softwareId = ID,
+                    email = email,
+                    password = password,
+                    timeStamp = timestamp
+
+                };
+
+                // 序列化为 JSON
+                string json = JsonSerializer.Serialize(requestData);
+
+                // 使用 HttpClient 发送 POST 请求
+                using (HttpClient client = new HttpClient())
+                {
+                    // 设置请求头（Content-Type）
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                    // 构造 StringContent（请求体）
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // 发送 POST 请求
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
+                    string result = _JsonData.Data.Email;
+                    return result;
+
+                }
+            });
+        }
+        /// <summary>
+        /// 获取账户剩余时长  （ 程序实例ID，OpenID,邮箱，密码）
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="key">OpenID/param>
+        /// <param name="email">邮箱</param>
+        /// <param name="password">密码</param>
+        /// <returns>返回JSON</returns>
+        public async Task<string> GetUserBalance(string ID, string key, string email, string password)
+        {
+            bool _logon = await CustomerLogon(ID, key, email, password);
+            if (_logon == false)
+            {
+                return _worring;
+            }
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            return await ExecuteApiRequest(async (apiUrl) =>
+            {
+                var requestData = new
+                {
+                    softwareId = ID,
+                    email = email,
+                    password = password,
+                    timeStamp = timestamp
+
+                };
+
+                // 序列化为 JSON
+                string json = JsonSerializer.Serialize(requestData);
+
+                // 使用 HttpClient 发送 POST 请求
+                using (HttpClient client = new HttpClient())
+                {
+                    // 设置请求头（Content-Type）
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                    // 构造 StringContent（请求体）
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // 发送 POST 请求
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
+                    string result =_JsonData.Data.Balance.ToString();
+                    return result;
+
+                }
+            });
+        }
+        /// <summary>
+        /// 是否授权  （ 程序实例ID，OpenID,邮箱，密码）
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="key">OpenID/param>
+        /// <param name="email">邮箱</param>
+        /// <param name="password">密码</param>
+        /// <returns>返回布尔类型</returns>
+        public async Task<bool> GetUserLicense(string ID, string key, string email, string password)
+        {
+            bool _logon = await CustomerLogon(ID, key, email, password);
+            if (_logon == false)
+            {
+                return _logon;
+            }
+            string dataJson;
+            string _data;
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            _data= await ExecuteApiRequest(async (apiUrl) =>
+            {
+                var requestData = new
+                {
+                    softwareId = ID,
+                    email = email,
+                    password = password,
+                    timeStamp = timestamp
+
+                };
+
+                // 序列化为 JSON
+                string json = JsonSerializer.Serialize(requestData);
+
+                // 使用 HttpClient 发送 POST 请求
+                using (HttpClient client = new HttpClient())
+                {
+                    // 设置请求头（Content-Type）
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                    // 构造 StringContent（请求体）
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // 发送 POST 请求
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
+                    dataJson = _JsonData.Data.License;
+                    if (dataJson == "y")
+                    {
+                        return dataJson;
+                    }
+                    else 
+                    {
+                        return dataJson;
+                    }
+                }
+            });
+            if (bool.TryParse(_data, out bool result))
+                return result;
+            return false; // 默认值（解析失败时）
+        }
+        /// <summary>
+        /// 获取用户登录时间戳 （ 程序实例ID，OpenID,邮箱，密码）
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="key">OpenID/param>
+        /// <param name="email">邮箱</param>
+        /// <param name="password">密码</param>
+        /// <returns>返回时间戳</returns>
+        public async Task<string> GetUserTimeCrypt(string ID, string key, string email, string password)
+        {
+            bool _logon = await CustomerLogon(ID, key, email, password);
+            if (_logon == false)
+            {
+                return _worring;
+            }
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            return await ExecuteApiRequest(async (apiUrl) =>
+            {
+                var requestData = new
+                {
+                    softwareId = ID,
+                    email = email,
+                    password = password,
+                    timeStamp = timestamp
+
+                };
+
+                // 序列化为 JSON
+                string json = JsonSerializer.Serialize(requestData);
+
+                // 使用 HttpClient 发送 POST 请求
+                using (HttpClient client = new HttpClient())
+                {
+                    // 设置请求头（Content-Type）
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                    // 构造 StringContent（请求体）
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // 发送 POST 请求
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
+                    // 解密数据
+                    string JsonData = AesDecryptData(_JsonData.Data.TimeCrypt, key);
+                    string dataJson = JsonData;
+                    return dataJson;
+                }    
+            });
+        }
+        /// <summary>
+        /// 卡密充值  （ 程序实例ID，OpenID,登录邮箱，密码，卡密ID ）
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="key">OpenID</param>
+        /// <param name="email">登录邮箱</param>
+        /// <param name="password">登录密码</param>
+        /// <param name="AuthId">卡密ID</param>
+        /// <returns>返回验证码</returns>
+        public async Task<string> Recharge(string ID, string key, string email, string password, string AuthId)
+        {
+            bool _logon = await CustomerLogon(ID, key, email, password);
+            if (_logon == false)
+            {
+                return _worring;
+            }
+            var _customerId = await GetUserId(ID, key, email, password);         
+            return await ExecuteApiRequest(async (apiUrl) =>
+            {
+                var requestData = new
+                {
+                    customerId = _customerId.ToString(),
+                    authId = AuthId
+                };
+
+                // 序列化为 JSON
+                string json = JsonSerializer.Serialize(requestData);
+
+                // 使用 HttpClient 发送 POST 请求
+                using (HttpClient client = new HttpClient())
+                {
+                    // 设置请求头（Content-Type）
+                    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                    // 构造 StringContent（请求体）
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // 发送 POST 请求
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerRecharge", content);
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                    return jsonString;
+
+                }
+            });
+        }
+
         public string AesEncrypt(object data, string key)
         {
             // 将数据转换为JSON字符串
@@ -1231,36 +1879,10 @@ namespace HaiTangUpdate
                 }
             }
 
-        }
+        } 
 
         #endregion
-        #region 辅助类
-
-        public class Json
-        {
-            public int Code { get; set; }
-            public bool Success { get; set; }
-            public string Message { get; set; }
-            public string Data { get; set; }
-            public string SoftwareID { get; set; }
-            public string VersionNumber { get; set; }
-            public string SoftwareName { get; set; }
-            public string VersionInformation { get; set; }
-            public string Notice { get; set; }
-            public string DownloadLink { get; set; }
-            public string NumberOfVisits { get; set; }
-            public string MiniVersion { get; set; }
-            public string IsItEffective { get; set; }
-            public string ExpirationDate { get; set; }
-            public string NetworkVerificationRemarks { get; set; }
-            public string NumberOfDays { get; set; }
-            public string NetworkVerificationId { get; set; }
-            public string TimeStamp { get; set; }
-            public string MandatoryUpdate { get; set; }
-            public string SoftwareMd5 { get; set; }
-            public string CloudVariables { get; set; }
-        }
-        #endregion
+        
         #region 私有方法
 
 
