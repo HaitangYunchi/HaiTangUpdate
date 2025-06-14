@@ -5,48 +5,67 @@
 	HaiTangUpdate.Update up = new HaiTangUpdate.Update();
         
 	// 获取各种更新信息的示例方法调用
-	string downloadLink = await up.GetDownloadLink("2018K程序实例ID", "你的OpenID","机器码");              // 获取下载链接
-	string softwareID = await up.GetSoftwareID("2018K程序实例ID", "你的OpenID","机器码");                  // 获取软件ID
-	string versionNumber = await up.GetVersionNumber("2018K程序实例ID", "你的OpenID","机器码");           // 获取版本号
-	string softwareName = await up.GetSoftwareName("2018K程序实例ID", "你的OpenID","机器码");             // 获取软件名称
-	string versionInfo = await up.GetVersionInformation("2018K程序实例ID", "你的OpenID","机器码");        // 获取版本信息
-	string notice = await up.GetNotice("2018K程序实例ID", "你的OpenID","机器码");                        // 获取更新通知
-	string visits = await up.GetNumberOfVisits("2018K程序实例ID", "你的OpenID","机器码");                // 获取访问次数
-	string miniVersion = await up.GetMiniVersion("2018K程序实例ID", "你的OpenID","机器码");              // 获取最小版本
-	string isEffective = await up.GetIsItEffective("2018K程序实例ID", "你的OpenID","机器码");            // 获取是否有效
-	string expirationDate = await up.GetExpirationDate("2018K程序实例ID", "你的OpenID","机器码");        // 获取到期日期
-	string remarks = await up.GetRemarks("2018K程序实例ID", "你的OpenID","机器码");                      // 获取备注
-	string days = await up.GetNumberOfDays("2018K程序实例ID", "你的OpenID","机器码");                    // 获取天数
-	string networkVerifyId = await up.GetNetworkVerificationId("2018K程序实例ID", "你的OpenID","机器码"); // 获取网络验证ID
-	string timestamp = await up.GetTimeStamp("2018K程序实例ID", "你的OpenID","机器码");                  // 获取时间戳
-	string mandatoryUpdate = await up.GetMandatoryUpdate("2018K程序实例ID", "你的OpenID","机器码");      // 获取强制更新状态
-	string md5 = await up.GetSoftwareMd5("2018K程序实例ID", "你的OpenID","机器码");                      // 获取软件MD5
-	string JsonEncryData = await up.GetUpade("2018K程序实例ID","你的OpenID","机器码"); //返回你的data数据
-	string CloudVar = await up.GetCloudVariables("2018K程序实例ID", "你的OpenID","云端变量名称"); // 获取你的云变量（变量值）
-	up.AesDecrypt("加密的data","你的OpenID");//返回解密后的数据
-	up.AesEncrypt("待加密数据data","你的OpenID"));//返回加密后的数据
-	up.ActivationKey("2018K程序实例ID","卡密ID","机器码");//激活软件
-	await up.MessageSend("2018K程序实例ID", "要发送的消息");//发送消息
-	up.GetMachineCode();// 获取机器码 cpu+主板 返回20位机器码，格式：XXXXX-XXXXX-XXXXX-XXXXX
-	await up.CreateNetworkAuthentication("卡密天数", "卡密备注","2018K程序实例ID","你的OpenID");//创建卡密
+	string downloadLink = await up.GetDownloadLink("实例ID", "你的OpenID","机器码");				// 获取下载链接
+	string softwareID = await up.GetSoftwareID("实例ID", "你的OpenID","机器码");					// 获取软件ID
+	string versionNumber = await up.GetVersionNumber("实例ID", "你的OpenID","机器码");				// 获取版本号
+	string softwareName = await up.GetSoftwareName("实例ID", "你的OpenID","机器码");				// 获取软件名称
+	string versionInfo = await up.GetVersionInformation("实例ID", "你的OpenID","机器码");			// 获取版本信息
+	string notice = await up.GetNotice("实例ID", "你的OpenID","机器码");							// 获取更新通知
+	string visits = await up.GetNumberOfVisits("实例ID", "你的OpenID","机器码");					// 获取访问次数
+	string miniVersion = await up.GetMiniVersion("实例ID", "你的OpenID","机器码");					// 获取最小版本
+	string isEffective = await up.GetIsItEffective("实例ID", "你的OpenID","机器码");				// 获取是否有效
+	string expirationDate = await up.GetExpirationDate("实例ID", "你的OpenID","机器码");			// 获取到期日期
+	string remarks = await up.GetRemarks("实例ID", "你的OpenID","机器码");							// 获取备注
+	string days = await up.GetNumberOfDays("实例ID", "你的OpenID","机器码");						// 获取天数
+	string networkVerifyId = await up.GetNetworkVerificationId("实例ID", "你的OpenID","机器码");	// 获取网络验证ID
+	string timestamp = await up.GetTimeStamp("实例ID", "你的OpenID","机器码");						// 获取时间戳
+	string mandatoryUpdate = await up.GetMandatoryUpdate("实例ID", "你的OpenID","机器码");			// 获取强制更新状态
+	string md5 = await up.GetSoftwareMd5("实例ID", "你的OpenID","机器码");							// 获取软件MD5
+	string JsonEncryData = await up.GetUpade("实例ID","你的OpenID","机器码");						//返回实例所有数据
+	string CloudVar = await up.GetCloudVariables("实例ID", "你的OpenID","云端变量名称");			// 获取你的云变量（变量值）
+
+	up.AesDecrypt("加密的data","你的OpenID");			/返回解密后的数据
+	up.AesEncrypt("待加密数据data","你的OpenID"));		//返回加密后的数据
+	up.ActivationKey("实例ID","卡密ID","机器码");		//激活软件
+	await up.MessageSend("实例ID", "要发送的消息");	//发送消息
+
+	up.GetMachineCode();	// 获取机器码 cpu+主板 返回20位机器码，格式：XXXXX-XXXXX-XXXXX-XXXXX
+	await up.CreateNetworkAuthentication("卡密天数", "卡密备注","实例ID","你的OpenID");//创建卡密
+
+	新增:
+	var response = await up.GetNetworkCode(实例ID, OpenID);		// 获取验证码
+	await up.ReplaceBind(实例ID, OpenID,卡密ID, 机器码);			// 卡密换绑
+	await up.CustomerLogon(实例ID,OpenID, 邮箱, 密码);				// 用户注册 返回布尔值
+	await up.CustomerLogon(实例ID,OpenID, 邮箱, 密码);				// 用户登录 返回布尔值
+	await up.Recharge(实例ID,OpenID, 邮箱, 密码,卡密ID);			// 充值
+	await up.GetUserInfo(实例ID,OpenID, 邮箱, 密码);				// 获取用户信息
+	await up.GetUserId(实例ID,OpenID, 邮箱, 密码);					// 获取用户ID
+	await up.GetUserAvatar(实例ID,OpenID, 邮箱, 密码);				// 获取用户头像地址
+	await up.GetUserNickname(实例ID,OpenID, 邮箱, 密码);			// 获取用户昵称
+	await up.GetUserEmail(实例ID,OpenID, 邮箱, 密码);				// 获取用户邮箱
+	await up.GetUserBalance(实例ID,OpenID, 邮箱, 密码);			// 获取账户余额（剩余时长）
+	await up.GetUserLicense(实例ID,OpenID, 邮箱, 密码);			// 获取授权信息
+	await up.GetUserTimeCrypt(实例ID,OpenID, 邮箱, 密码);			// 验证登录时间戳
+
+
 
     // 获取卡密剩余时间（类型long  返回值：永久-1，过期0，未注册1，其他返回时间戳）
-	long timestamp = up.GetRemainingUsageTime("2018K程序实例ID", "你的OpenID","机器码");      
+	long timestamp = up.GetRemainingUsageTime("实例ID", "你的OpenID","机器码");      
         
 
-        // 使用示例
+        // 版本检查使用示例
+		
         try
         {
-            // 假设我们要检查更新
-            string currentVersion = "1.0.0"; // 当前程序版本
-            string latestVersion =  await up.GetVersionNumber("2018K程序实例ID", "你的OpenID");
+			// 获取服务器版本信息
+			string serverVersion = await Task.Run(() => up.GetVersionNumber(实例ID,OpenID));
+            Version currentVersion = assembly.GetName().Version;	// 获取当前程序版本
+            Version latestVersion = new(serverVersion);				// 转换服务端版本号为标准版本号
 
-            //也可以把字符串变成版本然后比大小 Version _latestVersion = New(latestVersion);
-
-            if (latestVersion != currentVersion)
+            if (currentVersion < latestVersion)
             {
-                string downloadUrl =  await up.GetDownloadLink("2018K程序实例ID", "你的OpenID");
-                string updateInfo =  await up.GetVersionInformation("2018K程序实例ID", "你的OpenID");
+                string downloadUrl =  await up.GetDownloadLink("实例ID", "你的OpenID");
+                string updateInfo =  await up.GetVersionInformation("实例ID", "你的OpenID");
                 Console.WriteLine($"有新版本可用: {latestVersion}");
                 Console.WriteLine($"更新信息: {updateInfo}");
                 Console.WriteLine($"下载地址: {downloadUrl}");
@@ -61,7 +80,7 @@
         // 卡密剩余时间调用示例
         try
         {
-			var timestamp = await up.GetRemainingUsageTime("2018K程序实例ID", "你的OpenID","机器码");
+			var timestamp = await up.GetRemainingUsageTime("实例ID", "你的OpenID","机器码");
 			if (timestamp == -1)
 			{
 				Console.WriteLine("永久");
