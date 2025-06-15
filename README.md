@@ -110,7 +110,7 @@
         Console.WriteLine($"获取卡密剩余时间失败: {ex.Message}");
         }
         
-	
+
 	更新了自动检测api地址，优先使用默认地址，默认地址不通的时候在枚举其他地址，并把检测到健康的地址缓存起来（缓存时间5分钟）
 	private const string DefaultApiUrl = "http://api.2018k.cn";
 	private static string OpenApiUrl = DefaultApiUrl;

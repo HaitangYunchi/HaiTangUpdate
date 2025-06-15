@@ -13,11 +13,12 @@
  * 描述：
  *
  * ----------------------------------------------------------------
- * 修改人：
- * 时间：
- * 修改说明：
+ * 修改人：海棠云螭
+ * 时间：2025-06-15
+ * 修改说明：优化了实例ID，OpenID，账户登录邮箱和密码相关输入错误直接报错的问题，
+ * 采用验证式，直接返回错误信息或False，不会出现这些信息导致程序u崩溃
  *
- * 版本：V1.0.1
+ * 版本：V1.3.1-rc
  *----------------------------------------------------------------*/
 
 using System;
@@ -69,7 +70,7 @@ namespace HaiTangUpdate
         /// <summary>
         /// 获取机器码 cpu+主板 进行验证
         /// </summary>
-        /// <returns>返回20位机器码，格式：XXXXX-XXXXX-XXXXX-XXXXX</returns>
+        /// <returns>string 返回20位机器码，格式：XXXXX-XXXXX-XXXXX-XXXXX</returns>
 
         public string GetMachineCode()
         {
@@ -87,17 +88,69 @@ namespace HaiTangUpdate
             }
         }
         /// <summary>
+        /// 检测实例是否正常 （ 程序实例ID，机器码 [null] ）
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="key">OpenID</param>
+        /// <param name="Code">机器码，可以省略</param>
+        /// <returns>返回布尔值 如果 Code 为空，机器码为空时，使用自带的机器码</returns>
+        public async Task<bool> GetSoftCheck(string ID, string key, string Code = null)
+        {
+            string _result;
+            if (string.IsNullOrEmpty(Code))
+            {
+                Code = GetMachineCode();
+            }
+            _result = await ExecuteApiRequest(async (apiUrl) =>
+            {
+                using (HttpClient httpClient = new())
+                {
+                    // 构建请求URL
+                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    // 发送GET请求
+                    HttpResponseMessage response = await httpClient.GetAsync(requestUrl);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new Exception($"请求失败！HTTP状态码: {response.StatusCode}");
+                    }
+
+                    // 读取响应内容
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    Json _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+
+                    try
+                    {
+                        // 尝试解密数据，失败则直接返回 false
+                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        Json _Data = JsonConvert.DeserializeObject<Json>(JsonData);
+                        return _Data.User != null ? "true" : "false";
+                    }
+                    catch
+                    {
+                        return "false";
+                    }
+                }
+            });
+
+            return bool.TryParse(_result, out bool result) && result; // 解析失败也返回 false
+        }
+        /// <summary>
         /// 获取软件全部信息 （ 程序实例ID，机器码 [null] ）
         /// </summary>
         /// <param name="ID">程序实例ID</param>
         /// <param name="key">OpenID</param>
         /// <param name="Code">机器码，可以省略</param>
-        /// <returns>如果 Code 为空，机器码为空时，使用自带的机器码</returns>
+        /// <returns>返回 Json 如果 Code 为空，机器码为空时，使用自带的机器码</returns>
         public async Task<string> GetUpdate(string ID, string key,string Code = null)
         {
             if (string.IsNullOrEmpty(Code))
             {
                 Code = GetMachineCode();
+            }
+            bool _Check = await GetSoftCheck(ID, key,Code);
+            if (_Check == false)
+            {
+                return _error;
             }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
@@ -161,6 +214,11 @@ namespace HaiTangUpdate
             {
                 Code = GetMachineCode();
             }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return _error;
+            }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 using (HttpClient httpClient = new())
@@ -212,6 +270,11 @@ namespace HaiTangUpdate
             {
                 Code = GetMachineCode();
             }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return _error;
+            }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 using (HttpClient httpClient = new())
@@ -261,6 +324,11 @@ namespace HaiTangUpdate
             if (string.IsNullOrEmpty(Code))
             {
                 Code = GetMachineCode();
+            }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return _error;
             }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
@@ -312,6 +380,11 @@ namespace HaiTangUpdate
             {
                 Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
             }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return _error;
+            }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 using (HttpClient httpClient = new())
@@ -361,6 +434,11 @@ namespace HaiTangUpdate
             if (string.IsNullOrEmpty(Code))
             {
                 Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+            }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return _error;
             }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
@@ -412,6 +490,11 @@ namespace HaiTangUpdate
             {
                 Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
             }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return _error;
+            }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 using (HttpClient httpClient = new())
@@ -461,6 +544,11 @@ namespace HaiTangUpdate
             if (string.IsNullOrEmpty(Code))
             {
                 Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+            }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return _error;
             }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
@@ -512,6 +600,11 @@ namespace HaiTangUpdate
             {
                 Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
             }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return _error;
+            }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 using (HttpClient httpClient = new())
@@ -558,7 +651,15 @@ namespace HaiTangUpdate
         /// <returns>bool 返回卡密当前状态是否有效, 一般为判断软件是否注册 True  , False </returns>
         public async Task<bool> GetIsItEffective(string ID, string key, string Code)
         {
-
+            if (string.IsNullOrEmpty(Code))
+            {
+                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+            }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return false;
+            }
             string response = await ExecuteApiRequest(async (apiUrl) =>
             {
                 using (HttpClient httpClient = new())
@@ -613,6 +714,15 @@ namespace HaiTangUpdate
         /// <returns>string 返回软件卡密时间戳</returns>
         public async Task<string> GetExpirationDate(string ID, string key, string Code)
         {
+            if (string.IsNullOrEmpty(Code))
+            {
+                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+            }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return _error;
+            }
             var _IsItEffective = await GetIsItEffective(ID, key, Code);
             return await ExecuteApiRequest(async (apiUrl) =>
             {
@@ -669,6 +779,15 @@ namespace HaiTangUpdate
         /// <returns>string 返回卡密备注</returns>
         public async Task<string> GetRemarks(string ID, string key, string Code)
         {
+            if (string.IsNullOrEmpty(Code))
+            {
+                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+            }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return _error;
+            }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 using (HttpClient httpClient = new())
@@ -715,6 +834,15 @@ namespace HaiTangUpdate
         /// <returns>string 返回卡密有效期类型, 卡密有效期天数</returns>
         public async Task<string> GetNumberOfDays(string ID, string key, string Code)
         {
+            if (string.IsNullOrEmpty(Code))
+            {
+                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+            }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return _error;
+            }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 var _IsItEffective = await GetIsItEffective(ID, key, Code);
@@ -770,6 +898,15 @@ namespace HaiTangUpdate
         /// <returns>string 返回卡密ID</returns>
         public async Task<string> GetNetworkVerificationId(string ID, string key, string Code)
         {
+            if (string.IsNullOrEmpty(Code))
+            {
+                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+            }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return _error;
+            }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 using (HttpClient httpClient = new())
@@ -816,6 +953,15 @@ namespace HaiTangUpdate
         /// <returns>string 返回服务器时间, 时间戳，机器码可空</returns>
         public async Task<string> GetTimeStamp(string ID, string key, string Code = null)
         {
+            if (string.IsNullOrEmpty(Code))
+            {
+                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+            }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return _error;
+            }
             if (string.IsNullOrEmpty(Code))
             {
                 Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
@@ -880,6 +1026,11 @@ namespace HaiTangUpdate
             {
                 Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
             }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return false;
+            }
             string response = await ExecuteApiRequest(async (apiUrl) =>
             {
                 using (HttpClient httpClient = new())
@@ -938,6 +1089,11 @@ namespace HaiTangUpdate
             {
                 Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
             }
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == false)
+            {
+                return _error;
+            }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 using (HttpClient httpClient = new())
@@ -984,6 +1140,11 @@ namespace HaiTangUpdate
         /// <returns>string 返回云变量的值</returns>
         public async Task<string> GetCloudVariables(string ID, string key, string VarName)
         {
+            bool _Check = await GetSoftCheck(ID, key);
+            if (_Check == false)
+            {
+                return _error;
+            }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 using (HttpClient httpClient = new())
@@ -1027,9 +1188,13 @@ namespace HaiTangUpdate
         /// <param name="ID">程序实例ID</param>
         /// <param name="authId">卡密ID</param>
         /// <param name="Code">机器码</param>
-        /// <returns>不返回消息</returns>
+        /// <returns>返回JSON</returns>
         public async Task<string> ActivationKey(string authId, string ID, string Code)
         {
+            if (string.IsNullOrEmpty(Code))
+            {
+                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+            }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 string url = $"{apiUrl}activation?authId={authId}&softwareId={ID}&machineCode={Code}&isAPI=y";
@@ -1121,10 +1286,10 @@ namespace HaiTangUpdate
         /// </summary>
         /// <param name="ID">程序实例ID</param>
         /// <param name="key">OpenID</param>
-        /// <param name="authId">卡密ID</param>
+        /// <param name="AuthId">卡密ID</param>
         /// <param name="Code">机器码</param>
         /// <returns>返回JSON</returns>
-        public async Task<string> ReplaceBind(string ID, string key, string AuthId, string Code)
+        public async Task<string> ReplaceBind(string ID, string key, string AuthId, string Code = null)
         {
             return await ExecuteApiRequest(async (apiUrl) =>
             {
@@ -1165,37 +1330,38 @@ namespace HaiTangUpdate
         /// <param name="ID">程序实例ID</param>
         /// <param name="key">OpenID</param>
         /// <param name="Code">机器码</param>
-        /// <returns>永久返回-1，过期返回0，未注册返回1，其余返回时间戳，</returns>
+        /// <returns>长整数类型long 永久返回-1，过期返回0，未注册返回1，其余返回时间戳，</returns>
         public async Task<long> GetRemainingUsageTime(string ID, string key, string Code)
         {
+            if (string.IsNullOrEmpty(Code))
+            {
+                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+            }
             bool _IsItEffective = await GetIsItEffective(ID, key,Code);
             //string _numberOfDays = await GetNumberOfDays(ID, key, Code);
             string _expirationDate = await GetExpirationDate(ID, key, Code);
             
             try
             {
-                if (_IsItEffective == true)
+                if (_IsItEffective == true && _expirationDate == "7258089599000")
                 {
-                    if (_expirationDate == "")
+                    return -1;
+                }
+                else if (_IsItEffective == true && !string.IsNullOrWhiteSpace(_expirationDate))
+                {
+                    long lastTimestamp = long.Parse(_expirationDate);
+                    long currentTimestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                    long timestamp = (lastTimestamp - currentTimestamp);
+                    if (timestamp > 0)
                     {
-                        return -1;
+                        return timestamp;
                     }
                     else
                     {
-                        long lastTimestamp = long.Parse(_expirationDate);
-                        long currentTimestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                        long timestamp = (lastTimestamp - currentTimestamp);
-                        if (timestamp > 0)
-                        {
-                            return timestamp;
-                        }
-                        else
-                        {
-                            return 0;
-                        }
+                        return 0;
                     }
                 }
-                else 
+                else
                 {
                     return 1;
                 }
@@ -1212,16 +1378,20 @@ namespace HaiTangUpdate
         /// </summary>
         /// <param name="ID">程序实例ID</param>
         /// <param name="key">OpenID</param>
-        /// <returns>返回验证码</returns>
+        /// <returns>string 返回验证码</returns>
         public async Task<string> GetNetworkCode(string ID, string key)
         {
+            bool _logon = await GetSoftCheck(ID, key);
+            if (_logon == false)
+            {
+                return _error;
+            }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 var requestData = new
                 {
                     softwareId = ID
                 };
-
                 // 序列化为 JSON
                 string json = JsonSerializer.Serialize(requestData);
 
@@ -1239,6 +1409,8 @@ namespace HaiTangUpdate
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
                     string JsonData = AesDecryptData(_JsonData.data, key);
+
+
                     return JsonData;
                     
                 }
@@ -1290,9 +1462,7 @@ namespace HaiTangUpdate
                     return JsonData;
                   }
             });
-            if (bool.TryParse(_data, out bool result))
-                return result;
-            return false; // 默认值（解析失败时）
+            return bool.TryParse(_data, out var result) && result;
         }
         /// <summary>
         /// 用户登录  （ 程序实例ID，OpenID,邮箱，密码）
@@ -1301,7 +1471,7 @@ namespace HaiTangUpdate
         /// <param name="key">OpenID/param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
-        /// <returns>返回布尔类型</returns>
+        /// <returns>返回布尔类型 bool</returns>
         public async Task<bool> CustomerLogon(string ID,string key, string email, string password)
         {
             string _result;
@@ -1357,11 +1527,7 @@ namespace HaiTangUpdate
             {
                 throw new Exception($"程序异常: {ex.Message}");
             }
-            
-
-            if (bool.TryParse(_result, out bool result))
-                return result;
-            return false; // 默认值（解析失败时）
+            return bool.TryParse(_result, out bool result) && result; // 解析失败也返回 false
         }
 
         /// <summary>
@@ -1420,7 +1586,7 @@ namespace HaiTangUpdate
         /// <param name="key">OpenID/param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
-        /// <returns>返回JSON</returns>
+        /// <returns>返回string类型</returns>
         public async Task<string> GetUserId(string ID, string key, string email, string password)
         {
             bool _logon = await CustomerLogon(ID, key, email, password);
@@ -1469,7 +1635,7 @@ namespace HaiTangUpdate
         /// <param name="key">OpenID/param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
-        /// <returns>返回JSON</returns>
+        /// <returns>返回string类型</returns>
         public async Task<string> GetUserAvatar(string ID, string key, string email, string password)
         {
             bool _logon = await CustomerLogon(ID, key, email, password);
@@ -1518,7 +1684,7 @@ namespace HaiTangUpdate
         /// <param name="key">OpenID/param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
-        /// <returns>返回JSON</returns>
+        /// <returns>返回string类型</returns>
         public async Task<string> GetUserNickname(string ID, string key, string email, string password)
         {
             bool _logon = await CustomerLogon(ID, key, email, password);
@@ -1567,7 +1733,7 @@ namespace HaiTangUpdate
         /// <param name="key">OpenID/param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
-        /// <returns>返回JSON</returns>
+        /// <returns>返回string类型</returns>
         public async Task<string> GetUserEmail(string ID, string key, string email, string password)
         {
             bool _logon = await CustomerLogon(ID, key, email, password);
@@ -1616,7 +1782,7 @@ namespace HaiTangUpdate
         /// <param name="key">OpenID/param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
-        /// <returns>返回JSON</returns>
+        /// <returns>返回string类型</returns>
         public async Task<string> GetUserBalance(string ID, string key, string email, string password)
         {
             bool _logon = await CustomerLogon(ID, key, email, password);
@@ -1714,9 +1880,7 @@ namespace HaiTangUpdate
                     }
                 }
             });
-            if (bool.TryParse(_data, out bool result))
-                return result;
-            return false; // 默认值（解析失败时）
+            return bool.TryParse(_data, out var result) && result;
         }
         /// <summary>
         /// 获取用户登录时间戳 （ 程序实例ID，OpenID,邮箱，密码）
@@ -1725,7 +1889,7 @@ namespace HaiTangUpdate
         /// <param name="key">OpenID/param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
-        /// <returns>返回时间戳</returns>
+        /// <returns>string 返回时间戳</returns>
         public async Task<string> GetUserTimeCrypt(string ID, string key, string email, string password)
         {
             bool _logon = await CustomerLogon(ID, key, email, password);
@@ -1776,7 +1940,7 @@ namespace HaiTangUpdate
         /// <param name="email">登录邮箱</param>
         /// <param name="password">登录密码</param>
         /// <param name="AuthId">卡密ID</param>
-        /// <returns>返回验证码</returns>
+        /// <returns>string 返回验证码</returns>
         public async Task<string> Recharge(string ID, string key, string email, string password, string AuthId)
         {
             bool _logon = await CustomerLogon(ID, key, email, password);
@@ -1808,7 +1972,7 @@ namespace HaiTangUpdate
                     // 发送 POST 请求
                     HttpResponseMessage response = await client.PostAsync(apiUrl + "customerRecharge", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
-                    var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                    //var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
                     return jsonString;
 
                 }
@@ -1851,32 +2015,39 @@ namespace HaiTangUpdate
         public string AesDecrypt(string encryptedData, string key)
         {
 
-            // 将Base64密文转换为字节数组
-            byte[] cipherBytes = Convert.FromBase64String(encryptedData);
-
-            // 创建AES解密器
-            using (Aes aesAlg = Aes.Create())
+            try
             {
-                aesAlg.Key = HexStringToByteArray(key); ;
-                aesAlg.IV = new byte[16];
-                aesAlg.Mode = CipherMode.CBC;
-                aesAlg.Padding = PaddingMode.PKCS7;
+                // 将Base64密文转换为字节数组
+                byte[] cipherBytes = Convert.FromBase64String(encryptedData);
 
-                // 创建解密器
-                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-
-                // 执行解密
-                using (MemoryStream msDecrypt = new MemoryStream(cipherBytes))
+                // 创建AES解密器
+                using (Aes aesAlg = Aes.Create())
                 {
-                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                    aesAlg.Key = HexStringToByteArray(key); ;
+                    aesAlg.IV = new byte[16];
+                    aesAlg.Mode = CipherMode.CBC;
+                    aesAlg.Padding = PaddingMode.PKCS7;
+
+                    // 创建解密器
+                    ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+
+                    // 执行解密
+                    using (MemoryStream msDecrypt = new MemoryStream(cipherBytes))
                     {
-                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                        using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
                         {
-                            // 返回解密后的UTF8字符串
-                            return srDecrypt.ReadToEnd();
+                            using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                            {
+                                // 返回解密后的UTF8字符串
+                                return srDecrypt.ReadToEnd();
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception ex)    
+            {
+               return ($"程序异常: {ex.Message}");
             }
 
         } 
