@@ -2,7 +2,7 @@
  **如果有需要的小伙伴，可以自行去 [https://2018k.cn/](https://2018k.cn/) 申请一个OpenID，然后调用我这里的方法就可以了	** 
 
     // 首先实例化
-	HaiTangUpdate.Update up = new HaiTangUpdate.Update();
+	HaiTangUpdate.Update up = new();
         
 	// 获取各种更新信息的示例方法调用
 	string downloadLink = await up.GetDownloadLink("实例ID", "你的OpenID","机器码");				// 获取下载链接
