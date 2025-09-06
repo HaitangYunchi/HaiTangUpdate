@@ -50,8 +50,8 @@
 	更新了日志记录功能 ，可以记录调用日志到本地文件，方便调试
 	首先using HaiTangUpdate; 
 	在需要记录日志的代码中添加如下代码：
-	Logger.Log($"程序启动", Logger.LogLevel.INFO);	//其中 INFO 可以替换为 DEBUG WARN ERROR
-	Logger.Log($"程序启动已完成", Logger.LogLevel.INFO);	//其中 INFO 可以替换为 DEBUG WARN ERROR
+	Logger.Log($"程序启动", Logger.LogLevel.INFO);	//其中 INFO 可以替换为 INFO WARN ERROR
+	Logger.Log($"程序启动已完成", Logger.LogLevel.INFO);	//其中 INFO 可以替换为 INFO WARN ERROR
 
 
     // 获取卡密剩余时间（类型long  返回值：永久-1，过期0，未注册1，其他返回时间戳）
