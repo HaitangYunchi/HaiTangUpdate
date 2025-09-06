@@ -21,29 +21,31 @@
  * 版本：V1.3.1-rc
  *----------------------------------------------------------------*/
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Net.NetworkInformation;
+using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Net.Http.Json;
-using System.Security.Cryptography;
-using Newtonsoft.Json;
-using System.Management;
-using Newtonsoft.Json.Linq;
-using System.Net;
-using JsonException = System.Text.Json.JsonException;
-using System.Net.Http;
-using JsonSerializer = System.Text.Json.JsonSerializer;
+using System.Threading.Tasks;
 using static HaiTangUpdate.JsonHelper;
+using JsonException = System.Text.Json.JsonException;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace HaiTangUpdate
 {
     public class Update
     {
         #region 常量定义
+
         private const string Salt = "k3apRuJR2j388Yy5CWxfnXrHkwg3AvUntgVhuUMWBDXDEsyaeX7Ze3QbvmejbqSz"; //生成机器码用的加密盐值
         private readonly HttpClient _httpClient = new HttpClient();
         private const string DefaultApiUrl = "http://api.2018k.cn/v3/";
@@ -68,7 +70,7 @@ namespace HaiTangUpdate
         #endregion
         #region 公有方法
         /// <summary>
-        /// 获取机器码 cpu+主板 进行验证
+        /// 获取机器码 cpu+主板+64位盐值 进行验证
         /// </summary>
         /// <returns>string 返回20位机器码，格式：XXXXX-XXXXX-XXXXX-XXXXX</returns>
 
@@ -84,7 +86,7 @@ namespace HaiTangUpdate
             }
             catch (Exception ex)
             {
-                return GenerateErrorCode(); // 生成错误码
+                return GenerateErrorCode(); // 如果失败生成错误码 这种几率几乎可以忽略不计
             }
         }
         /// <summary>
@@ -2050,12 +2052,29 @@ namespace HaiTangUpdate
                return ($"程序异常: {ex.Message}");
             }
 
-        } 
+        }
 
         #endregion
-        
+
         #region 私有方法
 
+        /// <summary>
+        /// 检查网络连接是否可用
+        /// </summary>
+        /// <returns>如果网络可用返回true，否则返回false</returns>
+        private static bool IsNetworkAvailable()
+        {
+            try
+            {
+                // 使用NetworkInterface检查网络连接状态
+                return NetworkInterface.GetIsNetworkAvailable();
+            }
+            catch
+            {
+                // 如果检查过程中出现异常，保守返回false
+                return false;
+            }
+        }
 
         // API健康状态类
         private class ApiHealthStatus
@@ -2083,6 +2102,11 @@ namespace HaiTangUpdate
         {
             lock (lockObject)
             {
+                // 首先检查网络是否可用
+                if (!IsNetworkAvailable())
+                {
+                    return DefaultApiUrl;
+                }
                 // 首先检查当前地址是否健康
                 if (IsApiHealthy(OpenApiUrl))
                 {
@@ -2164,22 +2188,25 @@ namespace HaiTangUpdate
             }
             catch (HttpRequestException ex)
             {
-                lastException = ex;
-                // 标记当前地址为不健康
-                MarkApiAsUnhealthy(bestApiUrl, ex);
-
-                // 尝试使用下一个可用地址重试一次
-                bestApiUrl = GetBestAvailableApiUrl();
-                if (bestApiUrl != OpenApiUrl) // 确保不是同一个地址
+                if (IsNetworkAvailable())
                 {
-                    try
+                    lastException = ex;
+                    // 标记当前地址为不健康
+                    MarkApiAsUnhealthy(bestApiUrl, ex);
+
+                    // 尝试使用下一个可用地址重试一次
+                    bestApiUrl = GetBestAvailableApiUrl();
+                    if (bestApiUrl != OpenApiUrl) // 确保不是同一个地址
                     {
-                        return await requestFunc(bestApiUrl);
-                    }
-                    catch (Exception retryEx)
-                    {
-                        lastException = retryEx;
-                        MarkApiAsUnhealthy(bestApiUrl, retryEx);
+                        try
+                        {
+                            return await requestFunc(bestApiUrl);
+                        }
+                        catch (Exception retryEx)
+                        {
+                            lastException = retryEx;
+                            MarkApiAsUnhealthy(bestApiUrl, retryEx);
+                        }
                     }
                 }
             }

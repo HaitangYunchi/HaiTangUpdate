@@ -1,8 +1,8 @@
-### 这个是为 2018k 在线更新模块写的一个库
+﻿### 这个是为 2018k 在线更新模块写的一个库
  **如果有需要的小伙伴，可以自行去 [https://2018k.cn/](https://2018k.cn/) 申请一个OpenID，然后调用我这里的方法就可以了	** 
 
     // 首先实例化
-	HaiTangUpdate.Update up = new HaiTangUpdate.Update();
+	HaiTangUpdate.Update up = new();
         
 	// 获取各种更新信息的示例方法调用
 	string downloadLink = await up.GetDownloadLink("实例ID", "你的OpenID","机器码");				// 获取下载链接
@@ -21,20 +21,20 @@
 	string timestamp = await up.GetTimeStamp("实例ID", "你的OpenID","机器码");						// 获取时间戳
 	string mandatoryUpdate = await up.GetMandatoryUpdate("实例ID", "你的OpenID","机器码");			// 获取强制更新状态
 	string md5 = await up.GetSoftwareMd5("实例ID", "你的OpenID","机器码");							// 获取软件MD5
-	string JsonEncryData = await up.GetUpade("实例ID","你的OpenID","机器码");						//返回实例所有数据
+	string JsonEncryData = await up.GetUpade("实例ID","你的OpenID","机器码");						// 返回实例所有数据
 	string CloudVar = await up.GetCloudVariables("实例ID", "你的OpenID","云端变量名称");			// 获取你的云变量（变量值）
 
-	up.AesDecrypt("加密的data","你的OpenID");			/返回解密后的数据
-	up.AesEncrypt("待加密数据data","你的OpenID"));		//返回加密后的数据
-	up.ActivationKey("实例ID","卡密ID","机器码");		//激活软件
+	up.AesDecrypt("加密的data","你的OpenID");			// 返回解密后的数据
+	up.AesEncrypt("待加密数据data","你的OpenID"));		// 返回加密后的数据
+	up.ActivationKey("实例ID","卡密ID","机器码");		// 激活软件
 	await up.MessageSend("实例ID", "要发送的消息");	//发送消息
 
 	up.GetMachineCode();	// 获取机器码 cpu+主板 返回20位机器码，格式：XXXXX-XXXXX-XXXXX-XXXXX
-	await up.CreateNetworkAuthentication("卡密天数", "卡密备注","实例ID","你的OpenID");//创建卡密
+	await up.CreateNetworkAuthentication("卡密天数", "卡密备注","实例ID","你的OpenID");	// 创建卡密
 
 	新增:
-	var response = await up.GetNetworkCode(实例ID, OpenID);		// 获取验证码
-	await up.ReplaceBind(实例ID, OpenID,卡密ID, 机器码);			// 卡密换绑
+	var response = await up.GetNetworkCode(实例ID, OpenID);			// 获取验证码
+	await up.ReplaceBind(实例ID, OpenID,卡密ID, 机器码);			// 卡密换绑（貌似有点小bug，待定）
 	await up.CustomerLogon(实例ID,OpenID, 邮箱, 密码);				// 用户注册 返回布尔值
 	await up.CustomerLogon(实例ID,OpenID, 邮箱, 密码);				// 用户登录 返回布尔值
 	await up.Recharge(实例ID,OpenID, 邮箱, 密码,卡密ID);			// 充值
@@ -43,8 +43,8 @@
 	await up.GetUserAvatar(实例ID,OpenID, 邮箱, 密码);				// 获取用户头像地址
 	await up.GetUserNickname(实例ID,OpenID, 邮箱, 密码);			// 获取用户昵称
 	await up.GetUserEmail(实例ID,OpenID, 邮箱, 密码);				// 获取用户邮箱
-	await up.GetUserBalance(实例ID,OpenID, 邮箱, 密码);			// 获取账户余额（剩余时长）
-	await up.GetUserLicense(实例ID,OpenID, 邮箱, 密码);			// 获取授权信息
+	await up.GetUserBalance(实例ID,OpenID, 邮箱, 密码);				// 获取账户余额（剩余时长）
+	await up.GetUserLicense(实例ID,OpenID, 邮箱, 密码);				// 获取授权信息
 	await up.GetUserTimeCrypt(实例ID,OpenID, 邮箱, 密码);			// 验证登录时间戳
 
 
@@ -64,7 +64,7 @@
 
             if (currentVersion < latestVersion)
             {
-                string downloadUrl =  await up.GetDownloadLink("实例ID", "你的OpenID");
+                string downloadUrl = await up.GetDownloadLink("实例ID", "你的OpenID");
                 string updateInfo =  await up.GetVersionInformation("实例ID", "你的OpenID");
                 Console.WriteLine($"有新版本可用: {latestVersion}");
                 Console.WriteLine($"更新信息: {updateInfo}");
@@ -128,4 +128,4 @@
 
 B站 海棠云螭：[https://space.bilibili.com/3493128132626725](https://space.bilibili.com/3493128132626725)
 
-c#开发的获取程序版本及更新信息对比的动态链接库，当然易语言也可以调用这个库，详细的请自行搜索使用方法
+c#开发的获取程序版本及更新信息对比的动态链接库，采用.NET 8.0 框架编写，低于.NET 8.0 的不能使用哦
