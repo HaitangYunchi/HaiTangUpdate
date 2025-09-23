@@ -153,7 +153,9 @@ ToJson(DataTable dt) 和 ToJson(DataTable dt, string jsonName)
 ToJson(DbDataReader dataReader)
 
 详细调用：
+
 ListToJson - List转换成Json（两个重载方法）
+
 方法1：无参重载
 ```csharp
 // 定义实体类
