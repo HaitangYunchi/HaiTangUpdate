@@ -48,15 +48,15 @@ namespace HaiTangUpdate
 
         private const string Salt = "k3apRuJR2j388Yy5CWxfnXrHkwg3AvUntgVhuUMWBDXDEsyaeX7Ze3QbvmejbqSz"; //生成机器码用的加密盐值
         private readonly HttpClient _httpClient = new HttpClient();
-        private const string DefaultApiUrl = "http://api.2018k.cn/v3/";
+        private const string DefaultApiUrl = "http://api.2018k.cn";
         private static string OpenApiUrl = DefaultApiUrl;
         // 可用的API地址列表，用于故障转移
         private static readonly string[] ApiAddressList =
         {
-            "http://api.2018k.cn/v3/",
-            "http://api2.2018k.cn/v3/",
-            "http://api3.2018k.cn/v3/",
-            "http://api4.2018k.cn/v3/"
+            "http://api.2018k.cn",
+            "http://api2.2018k.cn",
+            "http://api3.2018k.cn",
+            "http://api4.2018k.cn"
         };
         // 用于存储当前API地址的索引
         private static int currentApiIndex = 0;
@@ -90,6 +90,25 @@ namespace HaiTangUpdate
             }
         }
         /// <summary>
+        /// 获取机器码 cpu+主板+64位盐值 进行验证
+        /// </summary>
+        /// <returns>string 返回128字符串机器码</returns>
+        public string GetMachineCodeEx()
+        {
+            try
+            {
+                // 获取硬件信息
+                string cpuId = GetCpuId();
+                string motherboardId = GetMotherboardId();
+                // 生成机器码
+                return GenerateFormattedCodeEx(cpuId, motherboardId);   // 获取512位 128字符串的机器码
+            }
+            catch (Exception ex)
+            {
+                return GenerateErrorCode(); // 如果失败生成错误码 这种几率几乎可以忽略不计
+            }
+        }
+        /// <summary>
         /// 检测实例是否正常 （ 程序实例ID，机器码 [null] ）
         /// </summary>
         /// <param name="ID">程序实例ID</param>
@@ -108,7 +127,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
                     // 发送GET请求
                     HttpResponseMessage response = await httpClient.GetAsync(requestUrl);
                     if (!response.IsSuccessStatusCode)
@@ -159,7 +178,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -226,7 +245,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -282,7 +301,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -337,7 +356,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -392,7 +411,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -447,7 +466,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -502,7 +521,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -557,7 +576,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -612,7 +631,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -667,7 +686,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -731,7 +750,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -795,7 +814,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -851,7 +870,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -914,7 +933,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -973,7 +992,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={Uri.EscapeDataString(ID)}" + (string.IsNullOrEmpty(Code) ? "" : $"&machineCode={Uri.EscapeDataString(Code)}&isAPI=y");
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={Uri.EscapeDataString(ID)}" + (string.IsNullOrEmpty(Code) ? "" : $"&machineCode={Uri.EscapeDataString(Code)}&isAPI=y");
 
                     try
                     {
@@ -1038,7 +1057,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -1101,7 +1120,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建请求URL
-                    string requestUrl = $"{apiUrl}obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                     try
                     {
@@ -1152,7 +1171,7 @@ namespace HaiTangUpdate
                 using (HttpClient httpClient = new())
                 {
                     // 构建API请求URL
-                    string requestUrl = $"{apiUrl}getCloudVariables?softwareId={ID}&isAPI=y";
+                    string requestUrl = $"{apiUrl}/v3/getCloudVariables?softwareId={ID}&isAPI=y";
 
                     // 发送GET请求
                     HttpResponseMessage response = await httpClient.GetAsync(requestUrl);
@@ -1199,7 +1218,7 @@ namespace HaiTangUpdate
             }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
-                string url = $"{apiUrl}activation?authId={authId}&softwareId={ID}&machineCode={Code}&isAPI=y";
+                string url = $"{apiUrl}/v3/activation?authId={authId}&softwareId={ID}&machineCode={Code}&isAPI=y";
                 // 发送 GET 请求
                 HttpResponseMessage response = await _httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
@@ -1217,7 +1236,7 @@ namespace HaiTangUpdate
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 message = Uri.EscapeDataString(message);
-                string url = $"{apiUrl}messageSend?softwareId={ID}&message={message}&isAPI=y";
+                string url = $"{apiUrl}/v3/messageSend?softwareId={ID}&message={message}&isAPI=y";
                 // 发送 GET 请求
                 HttpResponseMessage response = await _httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
@@ -1262,7 +1281,7 @@ namespace HaiTangUpdate
                 string encodedCiphertext = AesEncrypt(data, key);
 
                 // 发送请求
-                string url = $"{apiUrl}createNetworkAuthentication?info={Uri.EscapeDataString(encodedCiphertext)}&softwareId={ID}&isAPI=y";
+                string url = $"{apiUrl}/v3/createNetworkAuthentication?info={Uri.EscapeDataString(encodedCiphertext)}&softwareId={ID}&isAPI=y";
 
                 HttpResponseMessage response = await _httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
@@ -1305,7 +1324,7 @@ namespace HaiTangUpdate
                 // 加密数据
                 string encodedCiphertext = AesEncrypt(data, key);
                 // 发送请求
-                string url = $"{apiUrl}replaceBind?softwareId={ID}&info={Uri.EscapeDataString(encodedCiphertext)}&isAPI=y";
+                string url = $"{apiUrl}/v3/replaceBind?softwareId={ID}&info={Uri.EscapeDataString(encodedCiphertext)}&isAPI=y";
 
                 HttpResponseMessage response = await _httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
@@ -1407,7 +1426,7 @@ namespace HaiTangUpdate
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     // 发送 POST 请求
-                    HttpResponseMessage response = await client.PostAsync(apiUrl+ "captcha", content);              
+                    HttpResponseMessage response = await client.PostAsync(apiUrl+ "/v3/captcha", content);              
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
                     string JsonData = AesDecryptData(_JsonData.data, key);
@@ -1457,7 +1476,7 @@ namespace HaiTangUpdate
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     // 发送 POST 请求
-                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerRegister", content);
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerRegister", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
                     string JsonData =_JsonData.Success.ToString();
@@ -1503,7 +1522,7 @@ namespace HaiTangUpdate
                         // 构造 StringContent（请求体）
                         var content = new StringContent(json, Encoding.UTF8, "application/json");
                         // 发送 POST 请求
-                        HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                        HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                         if (!response.IsSuccessStatusCode)
                         {
                             Console.WriteLine($"请求失败！HTTP状态码: {response.StatusCode}");
@@ -1572,7 +1591,7 @@ namespace HaiTangUpdate
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     // 发送 POST 请求
-                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
                     string result = JsonConvert.SerializeObject(_JsonData.Data, Formatting.Indented);
@@ -1621,7 +1640,7 @@ namespace HaiTangUpdate
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     // 发送 POST 请求
-                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);                   
                     string result = _JsonData.Data.CustomerId;
@@ -1670,7 +1689,7 @@ namespace HaiTangUpdate
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     // 发送 POST 请求
-                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
                     string result = _JsonData.Data.AvatarUrl;
@@ -1719,7 +1738,7 @@ namespace HaiTangUpdate
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     // 发送 POST 请求
-                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
                     string result = _JsonData.Data.Nickname;
@@ -1768,7 +1787,7 @@ namespace HaiTangUpdate
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     // 发送 POST 请求
-                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
                     string result = _JsonData.Data.Email;
@@ -1817,7 +1836,7 @@ namespace HaiTangUpdate
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     // 发送 POST 请求
-                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
                     string result =_JsonData.Data.Balance.ToString();
@@ -1868,7 +1887,7 @@ namespace HaiTangUpdate
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     // 发送 POST 请求
-                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
                     dataJson = _JsonData.Data.License;
@@ -1924,7 +1943,7 @@ namespace HaiTangUpdate
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     // 发送 POST 请求
-                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerLogin", content);
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
                     // 解密数据
@@ -1972,7 +1991,7 @@ namespace HaiTangUpdate
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     // 发送 POST 请求
-                    HttpResponseMessage response = await client.PostAsync(apiUrl + "customerRecharge", content);
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerRecharge", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     //var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
                     return jsonString;
@@ -2275,22 +2294,9 @@ namespace HaiTangUpdate
         {
             // 组合硬件信息
             string composite = $"{cpuId}_{motherboardId}_{Salt}";
+            // 格式化输出
+            return FormatMachineCode(ShaHasher.Sha256(composite));
 
-            // 生成哈希
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(composite));
-
-                // 转换为大写十六进制字符串
-                StringBuilder sb = new StringBuilder();
-                foreach (byte b in hashBytes)
-                {
-                    sb.Append(b.ToString("X2"));
-                }
-
-                // 格式化输出
-                return FormatMachineCode(sb.ToString());
-            }
         }
         // 格式化机器码
         private static string FormatMachineCode(string hash)
@@ -2305,6 +2311,14 @@ namespace HaiTangUpdate
         }
         // 如果生成机器码失败，则生成带时间戳的错误码（示例：ERR-2025-0329-ABCDE）  这个就是不必要担心，
         // 毕竟cpu+主板怎么可能两个都失败
+        private static string GenerateFormattedCodeEx(string cpuId, string motherboardId)
+        {
+            // 组合硬件信息
+            string composite = $"{cpuId}-{motherboardId}-{Salt}";
+
+            return ShaHasher.Sha512(composite);
+        }
+       
         private static string GenerateErrorCode()
         {
 
