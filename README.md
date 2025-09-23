@@ -30,6 +30,7 @@
 	await up.MessageSend("实例ID", "要发送的消息");	//发送消息
 
 	up.GetMachineCode();	// 获取机器码 cpu+主板 返回20位机器码，格式：XXXXX-XXXXX-XXXXX-XXXXX
+	up.GetMachineCodeEx();	// 获取机器码 cpu+主板 返回128位机器码
 	await up.CreateNetworkAuthentication("卡密天数", "卡密备注","实例ID","你的OpenID");	// 创建卡密
 
 	var response = await up.GetNetworkCode(实例ID, OpenID);		// 获取验证码
