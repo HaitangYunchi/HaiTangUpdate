@@ -137,12 +137,19 @@
 方法列表：
 
 ListToJson<T>(IList<T> list)
+
 ListToJson<T>(IList<T> list, string jsonName)
+
 ToJson(object jsonObject)
+
 ToJson(IEnumerable array)
+
 ToArrayString(IEnumerable array)
+
 ToJson(DataSet dataSet)
+
 ToJson(DataTable dt) 和 ToJson(DataTable dt, string jsonName)
+
 ToJson(DbDataReader dataReader)
 
 详细调用：
