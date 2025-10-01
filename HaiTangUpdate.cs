@@ -120,7 +120,7 @@ namespace HaiTangUpdate
             string _result;
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode();
+                Code = GetMachineCodeEx();
             }
             _result = await ExecuteApiRequest(async (apiUrl) =>
             {
@@ -132,24 +132,28 @@ namespace HaiTangUpdate
                     HttpResponseMessage response = await httpClient.GetAsync(requestUrl);
                     if (!response.IsSuccessStatusCode)
                     {
-                        throw new Exception($"请求失败！HTTP状态码: {response.StatusCode}");
-                    }
-
-                    // 读取响应内容
-                    string jsonString = await response.Content.ReadAsStringAsync();
-                    Json _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
-
-                    try
-                    {
-                        // 尝试解密数据，失败则直接返回 false
-                        string JsonData = AesDecrypt(_JsonData.data, key);
-                        Json _Data = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return _Data.User != null ? "true" : "false";
-                    }
-                    catch
-                    {
                         return "false";
                     }
+                    else 
+                    {
+                        // 读取响应内容
+                        string jsonString = await response.Content.ReadAsStringAsync();
+                        Json _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+
+                        try
+                        {
+                            // 尝试解密数据，失败则直接返回 false
+                            string JsonData = AesDecrypt(_JsonData.data, key);
+                            Json _Data = JsonConvert.DeserializeObject<Json>(JsonData);
+                            return _Data.User != null ? "true" : "false";
+                        }
+                        catch
+                        {
+                            return "false";
+                        }
+                    }
+
+                    
                 }
             });
 
@@ -166,7 +170,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode();
+                Code = GetMachineCodeEx();
             }
             bool _Check = await GetSoftCheck(ID, key,Code);
             if (_Check == false)
@@ -233,7 +237,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode();
+                Code = GetMachineCodeEx();
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -289,7 +293,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode();
+                Code = GetMachineCodeEx();
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -344,7 +348,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode();
+                Code = GetMachineCodeEx();
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -399,7 +403,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -454,7 +458,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -509,7 +513,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -564,7 +568,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -619,7 +623,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -674,7 +678,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -737,7 +741,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -802,7 +806,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -857,7 +861,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -921,7 +925,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -976,7 +980,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -985,7 +989,7 @@ namespace HaiTangUpdate
             }
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
@@ -1045,7 +1049,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -1108,7 +1112,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -1214,7 +1218,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
@@ -1356,7 +1360,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _IsItEffective = await GetIsItEffective(ID, key,Code);
             //string _numberOfDays = await GetNumberOfDays(ID, key, Code);
