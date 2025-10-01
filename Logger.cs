@@ -2,13 +2,13 @@
  * 版权所有 (c) 2025 HaiTangYunchi  保留所有权利
  * CLR版本：4.0.30319.42000
  * 公司名称：HaiTangYunchi
- * 命名空间：HaiTangUpdate
- * 唯一标识：1287398d-a989-4eb7-bb13-2ed06941a850
- * 文件名：LoggerHelper
+ * 命名空间：HaiTang.library
+ * 唯一标识：6e37dc09-17f0-4511-ae7f-8277e8956c48
+ * 文件名：Logger
  * 
  * 创建者：海棠云螭
  * 电子邮箱：haitangyunchi@126.com
- * 创建时间：2025/9/6 18:34:58
+ * 创建时间：2025/9/29 5:13:43
  * 版本：V1.0.0
  * 描述：
  *
@@ -20,13 +20,7 @@
  * 版本：V1.0.1
  *----------------------------------------------------------------*/
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HaiTangUpdate
+namespace HaiTang.library
 {
     public class Logger
     {
@@ -56,10 +50,9 @@ namespace HaiTangUpdate
 
                         File.AppendAllText(logFile, logMessage);
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        // 日志记录失败处理（可选）
-                        Console.WriteLine($"日志写入失败: {ex.Message}");
+                        
                     }
                 }
             });

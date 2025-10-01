@@ -1,8 +1,9 @@
 ﻿### 这个是为 2018k 在线更新模块写的一个库
  **如果有需要的小伙伴，可以自行去 [https://2018k.cn/](https://2018k.cn/) 申请一个OpenID，然后调用我这里的方法就可以了	** 
  ```csharp
+	添加程序集引用，冰using HaiTang.library;
     // 首先实例化
-	HaiTangUpdate.Update up = new();
+	HaiTang.library.Update up = new();
         
 	// 获取各种更新信息的示例方法调用
 	string downloadLink = await up.GetDownloadLink("实例ID", "你的OpenID","机器码");				// 获取下载链接
@@ -30,6 +31,8 @@
 	await up.MessageSend("实例ID", "要发送的消息");	//发送消息
 
 	up.GetMachineCode();	// 获取机器码 cpu+主板 返回20位机器码，格式：XXXXX-XXXXX-XXXXX-XXXXX
+							// 这个方法已经开启屏蔽警告，预计2026-01-01日正式停止调用
+
 	up.GetMachineCodeEx();	// 获取机器码 cpu+主板 返回128位机器码
 	await up.CreateNetworkAuthentication("卡密天数", "卡密备注","实例ID","你的OpenID");	// 创建卡密
 
@@ -47,7 +50,6 @@
 	await up.GetUserLicense(实例ID,OpenID, 邮箱, 密码);			// 获取授权信息
 	await up.GetUserTimeCrypt(实例ID,OpenID, 邮箱, 密码);			// 验证登录时间戳
 
-	新增：
 	更新了日志记录功能 ，可以记录调用日志到本地文件，方便调试
 	首先using HaiTangUpdate; 
 	在需要记录日志的代码中添加如下代码：
@@ -133,179 +135,150 @@
 
 ```	
 
+新增2018k的Mysoft的Json的操作和读写更新
 
-新增Json转换类
-方法列表：
-
-ListToJson<T>(IList<T> list)
-
-ListToJson<T>(IList<T> list, string jsonName)
-
-ToJson(object jsonObject)
-
-ToJson(IEnumerable array)
-
-ToArrayString(IEnumerable array)
-
-ToJson(DataSet dataSet)
-
-ToJson(DataTable dt) 和 ToJson(DataTable dt, string jsonName)
-
-ToJson(DbDataReader dataReader)
-
-详细调用：
-
-ListToJson - List转换成Json（两个重载方法）
-
-方法1：无参重载
 ```csharp
-// 定义实体类
-public class Person
-{
-    public string Name { get; set; }
-    public int Age { get; set; }
-    public bool IsStudent { get; set; }
-    public DateTime BirthDate { get; set; }
+
+ JsonConfigManager configManager = new JsonConfigManager("appsettings.json");
+ AppSettingsModel configAsync = new AppSettingsModel();
+
+ string source = await up.GetUpdate(id, key);	//	获取2018k软件信息
+ configAsync = await configManager.ConvertFromSourceJson(source);	//	转换 Mysoft 到包含 bool、int、long 类型的Json
+ await configManager.WriteConfigAsync(configAsync);	//	保存转换后的Json到本地，默认根目录下appsettings.json
+
+ //读取Json
+ configAsync = await configManager.ReadConfigAsync();	//读取本地Json文件
+ Console.WriteLine($"作者: {config.Mysoft.author}");
+ Console.WriteLine($"访问次数: {config.Mysoft.numberOfVisits}");
+ Console.WriteLine($"强制更新: {config.Mysoft.mandatoryUpdate}");
+
+
+	// 异步更新 Mysoft 配置
+            await configManager.UpdateMysoftConfigAsync(mysoft =>
+            {
+                config.Mysoft.numberOfVisits = 50000;
+                config.Mysoft.notice = "更新了新的功能";
+                mysoft.numberOfDays = 30;
+            });
+
+	// 显示配置文件内容
+        try
+        {
+            var ConfigAsync = configManager.ReadConfigAsync();
+            string json = JsonSerializer.Serialize(config, new JsonSerializerOptions 
+            { 
+                WriteIndented = true,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            });
+            Console.WriteLine("当前配置文件内容:");
+            Console.WriteLine(json);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"显示配置错误: {ex.Message}");
+        }
+        #endregion
+
+        Console.WriteLine("程序执行完成，按任意键退出...");
+        Console.ReadKey();
+
+
+
+ ```
+ 存到本地文件和读取本地文件时，Json的格式转换为如下：
+ 
+ 
+```csharp
+ {
+  "mysoft": {
+    "author": "海棠云螭",
+    "mandatoryUpdate": true,
+    "softwareMd5": "570F53418B73502E79931DFB35DDD1FC",
+    "softwareName": "米哈游工具箱",
+    "notice": "6.0 版本过场动画key已更新\n更新如下文件",
+    "softwareId": "37A1054751AA585BC18A02E799310F53",
+    "versionInformation": "更新部分bug",
+    "versionNumber": "2.1.9.42477",
+    "numberOfVisits": 39415,
+    "miniVersion": "2.1.7.42477",
+    "timeStamp": 1758732791715,
+    "networkVerificationId": "EE2AA037A1054751A585BC18A0C2439F",
+    "isItEffective": true,
+    "numberOfDays": 99999,
+    "networkVerificationRemarks": "永久使用",
+    "expirationDate": 7258089599000,
+    "bilibiliLink": "https://space.bilibili.com/3493128132626725"
+  }
 }
 
-// 调用示例
-List<Person> personList = new List<Person>
-{
-    new Person { Name = "张三", Age = 25, IsStudent = false, BirthDate = new DateTime(1998, 5, 10) },
-    new Person { Name = "李四", Age = 18, IsStudent = true, BirthDate = new DateTime(2005, 8, 15) }
-};
-
-// 使用无参重载，自动使用类名作为JSON键名
-string json1 = ConvertJson.ListToJson(personList);
-// 结果: {"Person":[{"Name":"张三","Age":25,"IsStudent":false,"BirthDate":"1998-05-10"},{"Name":"李四","Age":18,"IsStudent":true,"BirthDate":"2005-08-15"}]}
+使用 var ConfigAsync = configManager.ReadConfigAsync(); 读取文件并获取对应类型的条目
+ ConfigAsync.softwareName
+ softwareName.versionInformation
+ softwareName.networkVerificationId
 ```
-方法2：带jsonName参数
+
+目前还新增了获取B站用户登录的用户信息，
+
+
 ```csharp
-// 使用自定义JSON键名
-string json2 = ConvertJson.ListToJson(personList, "Employees");
-// 结果: {"Employees":[{"Name":"张三","Age":25,"IsStudent":false,"BirthDate":"1998-05-10"},{"Name":"李四","Age":18,"IsStudent":true,"BirthDate":"2005-08-15"}]}
+		private readonly BilibiliCookieService _cookieService;
+        private readonly BilibiliUserService _userService;
+        private CookieData _currentCookies;
 
-// 空键名时使用类名
-string json3 = ConvertJson.ListToJson(personList, "");
-// 结果: {"Person":[{"Name":"张三","Age":25,"IsStudent":false,"BirthDate":"1998-05-10"},{"Name":"李四","Age":18,"IsStudent":true,"BirthDate":"2005-08-15"}]}
+        // 读取 Cookies 尝试自动登录
+		 _currentCookies = _cookieService.LoadCookies();
+           
+            try
+            {
+                if (_currentCookies != null)
+                {
+                    bool isValid = await _cookieService.ValidateCookiesAsync(_currentCookies);
+                    if (isValid)
+                    {
+                        _userService.SetUserCookies(_currentCookies.SessData, _currentCookies.BiliJct);
+                        BlibiliInfo.Caption = $" {_currentCookies.DedeUserID} ";
+                    }
+                    else
+                    {
+                        //_cookieService.ClearCookies();
+                        //AddLog("保存的Cookie已失效");
+                        BlibiliInfo.Caption = "未登录";
+                    }
+                }
+                else
+                {
+                    BlibiliInfo.Caption = "未登录";
+                }
+            }
+            catch (Exception ex)
+            {
+                BlibiliInfo.Caption = "未登录";
+            }
+
+                // 加载保存的Cookie
+                 _currentCookies = _cookieService.LoadCookies();
+                 // 验证Cookie有效性
+                bool isValid = await _cookieService.ValidateCookiesAsync(_currentCookies);
+
+                if (!isValid)
+                {
+                    UpdateStatus("登录信息无效，请重新登录");
+                    _cookieService.ClearCookies();
+                    return false;
+                }
+
+                // 设置用户服务Cookie
+                _userService.SetUserCookies(_currentCookies.SessData, _currentCookies.BiliJct);
+
+                // 获取用户信息验证登录
+                var userInfo = await _userService.GetSimpleUserInfoAsync();
+                string userUID = $"用户UID:{userInfo["UID"].ToString()}";
+
 ```
-2. ToJson(object) - 对象转换为Json
-```csharp
-// 单个对象转换
-Person person = new Person 
-{ 
-    Name = "王五", 
-    Age = 30, 
-    IsStudent = false, 
-    BirthDate = new DateTime(1993, 12, 20) 
-};
 
-string json = ConvertJson.ToJson(person);
-// 结果: {"Name":"王五","Age":30,"IsStudent":false,"BirthDate":"1993-12-20"}
+还有好多，自行下载源码研究吧
 
-// 包含特殊字符的测试
-Person specialPerson = new Person 
-{ 
-    Name = "John \"The Boss\"",  // 包含引号
-    Age = 35, 
-    IsStudent = false,
-    BirthDate = DateTime.Now
-};
 
-string specialJson = ConvertJson.ToJson(specialPerson);
-// 结果: {"Name":"John \"The Boss\"","Age":35,"IsStudent":false,"BirthDate":"2025-09-23"}
-```
-3. ToJson(IEnumerable) - 对象集合转换Json
-```csharp
-// 对象集合转换
-List<Person> people = new List<Person>
-{
-    new Person { Name = "赵六", Age = 22, IsStudent = true },
-    new Person { Name = "钱七", Age = 35, IsStudent = false }
-};
-
-string json = ConvertJson.ToJson(people);
-// 结果: [{"Name":"赵六","Age":22,"IsStudent":true},{"Name":"钱七","Age":35,"IsStudent":false}]
-
-// 数组也可以
-Person[] personArray = new Person[]
-{
-    new Person { Name = "孙八", Age = 28, IsStudent = false },
-    new Person { Name = "周九", Age = 19, IsStudent = true }
-};
-
-string arrayJson = ConvertJson.ToJson(personArray);
-// 结果: [{"Name":"孙八","Age":28,"IsStudent":false},{"Name":"周九","Age":19,"IsStudent":true}]
-```
-4. ToArrayString - 普通集合转换Json
-```csharp
-// 字符串集合
-List<string> fruits = new List<string> { "苹果", "香蕉", "橙子" };
-string fruitsJson = ConvertJson.ToArrayString(fruits);
-// 结果: ["苹果","香蕉","橙子"]
-
-// 数值集合
-int[] numbers = { 1, 2, 3, 4, 5 };
-string numbersJson = ConvertJson.ToArrayString(numbers);
-// 结果: [1,2,3,4,5]
-
-// 混合类型（会被转换为字符串）
-ArrayList mixedList = new ArrayList { "text", 123, true, 45.67 };
-string mixedJson = ConvertJson.ToArrayString(mixedList);
-// 结果: ["text","123","True","45.67"]
-```
-5. ToJson(DataSet) - DataSet转换为Json
-```csharp
-// 创建DataSet示例
-DataSet dataSet = new DataSet("CompanyData");
-
-// 第一个表：员工表
-DataTable employeesTable = new DataTable("Employees");
-employeesTable.Columns.Add("ID", typeof(int));
-employeesTable.Columns.Add("Name", typeof(string));
-employeesTable.Columns.Add("Department", typeof(string));
-employeesTable.Columns.Add("Salary", typeof(decimal));
-employeesTable.Rows.Add(1, "张三", "技术部", 8000.00m);
-employeesTable.Rows.Add(2, "李四", "销售部", 6500.00m);
-
-// 第二个表：部门表
-DataTable departmentsTable = new DataTable("Departments");
-departmentsTable.Columns.Add("DeptID", typeof(int));
-departmentsTable.Columns.Add("DeptName", typeof(string));
-departmentsTable.Columns.Add("Manager", typeof(string));
-departmentsTable.Rows.Add(101, "技术部", "王总监");
-departmentsTable.Rows.Add(102, "销售部", "李经理");
-
-dataSet.Tables.Add(employeesTable);
-dataSet.Tables.Add(departmentsTable);
-
-string dataSetJson = ConvertJson.ToJson(dataSet);
-// 结果: {"Employees":[{"ID":1,"Name":"张三","Department":"技术部","Salary":8000.00},{"ID":2,"Name":"李四","Department":"销售部","Salary":6500.00}],"Departments":[{"DeptID":101,"DeptName":"技术部","Manager":"王总监"},{"DeptID":102,"DeptName":"销售部","Manager":"李经理"}]}
-```
-6. ToJson(DataTable) - DataTable转换为Json（两个重载方法）
-方法1：无表名参数
-```csharp
-DataTable dt = new DataTable("Products");
-dt.Columns.Add("ProductID", typeof(int));
-dt.Columns.Add("ProductName", typeof(string));
-dt.Columns.Add("Price", typeof(decimal));
-dt.Columns.Add("InStock", typeof(bool));
-dt.Rows.Add(1, "笔记本电脑", 5999.99m, true);
-dt.Rows.Add(2, "智能手机", 2999.99m, false);
-dt.Rows.Add(3, "平板电脑", 1999.99m, true);
-
-string json1 = ConvertJson.ToJson(dt);
-// 结果: [{"ProductID":1,"ProductName":"笔记本电脑","Price":5999.99,"InStock":true},{"ProductID":2,"ProductName":"智能手机","Price":2999.99,"InStock":false},{"ProductID":3,"ProductName":"平板电脑","Price":1999.99,"InStock":true}]
-```
-方法2：带表名参数
-```csharp
-string json2 = ConvertJson.ToJson(dt, "商品列表");
-// 结果: {"商品列表":[{"ProductID":1,"ProductName":"笔记本电脑","Price":5999.99,"InStock":true},{"ProductID":2,"ProductName":"智能手机","Price":2999.99,"InStock":false},{"ProductID":3,"ProductName":"平板电脑","Price":1999.99,"InStock":true}]}
-
-// 空表名时使用DataTable的表名
-string json3 = ConvertJson.ToJson(dt, "");
-// 结果: {"Products":[{"ProductID":1,"ProductName":"笔记本电脑","Price":5999.99,"InStock":true},{"ProductID":2,"ProductName":"智能手机","Price":2999.99,"InStock":false},{"ProductID":3,"ProductName":"平板电脑","Price":1999.99,"InStock":true}]}
-```
 B站 海棠云螭：[https://space.bilibili.com/3493128132626725](https://space.bilibili.com/3493128132626725)
 
 c#开发的获取程序版本及更新信息对比的动态链接库，采用.NET 8.0 框架编写，低于.NET 8.0 的不能使用哦

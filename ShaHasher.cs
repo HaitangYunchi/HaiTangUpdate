@@ -2,13 +2,13 @@
  * 版权所有 (c) 2025 HaiTangYunchi  保留所有权利
  * CLR版本：4.0.30319.42000
  * 公司名称：HaiTangYunchi
- * 命名空间：HaiTangUpdate
- * 唯一标识：71dd74b1-dd02-4c73-aabd-5845e61e6fea
- * 文件名：ShaHash
+ * 命名空间：HaiTang.library
+ * 唯一标识：a58fd956-543a-434f-a196-537b4f87acb5
+ * 文件名：ShaHasher
  * 
  * 创建者：海棠云螭
  * 电子邮箱：haitangyunchi@126.com
- * 创建时间：2025/9/22 17:13:22
+ * 创建时间：2025/9/29 5:54:45
  * 版本：V1.0.0
  * 描述：
  *
@@ -20,14 +20,11 @@
  * 版本：V1.0.1
  *----------------------------------------------------------------*/
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
+
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace HaiTangUpdate
+namespace HaiTang.library
 {
     public class ShaHasher
     {
@@ -54,7 +51,7 @@ namespace HaiTangUpdate
                 byte[] bytes = Encoding.UTF8.GetBytes(input);
                 byte[] hashBytes = sha512.ComputeHash(bytes);
 
-                  return Convert.ToHexString(hashBytes);
+                return Convert.ToHexString(hashBytes);
             }
         }
     }

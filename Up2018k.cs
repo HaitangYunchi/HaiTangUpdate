@@ -1,55 +1,47 @@
 ﻿/*----------------------------------------------------------------
  * 版权所有 (c) 2025 HaiTangYunchi  保留所有权利
  * CLR版本：4.0.30319.42000
- * 公司名称：
- * 命名空间：HaiTangUpdate
- * 唯一标识：a013030b-3ddb-449a-b414-13a9955a1e86
- * 文件名：HaiTangUpdate
+ * 公司名称：HaiTangYunchi
+ * 命名空间：HaiTang.library
+ * 唯一标识：71dd74b1-dd02-4c73-aabd-5845e61e6fea
+ * 文件名：Up2018k
  * 
  * 创建者：海棠云螭
  * 电子邮箱：haitangyunchi@126.com
- * 创建时间：2025/4/13 16:48:29
+ * 创建时间：2025/9/29 4:52:31
  * 版本：V1.0.0
  * 描述：
  *
  * ----------------------------------------------------------------
- * 修改人：海棠云螭
- * 时间：2025-06-15
- * 修改说明：优化了实例ID，OpenID，账户登录邮箱和密码相关输入错误直接报错的问题，
- * 采用验证式，直接返回错误信息或False，不会出现这些信息导致程序u崩溃
+ * 修改人：
+ * 时间：
+ * 修改说明：
  *
- * 版本：V1.3.1-rc
+ * 版本：V1.0.1
  *----------------------------------------------------------------*/
 
+using HaiTang.library.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Json;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using static HaiTangUpdate.JsonHelper;
-using JsonException = System.Text.Json.JsonException;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace HaiTangUpdate
+
+namespace HaiTang.library
 {
     public class Update
     {
         #region 常量定义
 
         private const string Salt = "k3apRuJR2j388Yy5CWxfnXrHkwg3AvUntgVhuUMWBDXDEsyaeX7Ze3QbvmejbqSz"; //生成机器码用的加密盐值
+        public static string _error = "<空>";
+        public static string _worring = "错误：无法获取用户相关信息，请检查登录信息和系统时间是否正确";
         private readonly HttpClient _httpClient = new HttpClient();
         private const string DefaultApiUrl = "http://api.2018k.cn";
         private static string OpenApiUrl = DefaultApiUrl;
+        private static string LocalApiUrl = "127.0.0.1";
         // 可用的API地址列表，用于故障转移
         private static readonly string[] ApiAddressList =
         {
@@ -64,16 +56,21 @@ namespace HaiTangUpdate
         private static readonly Dictionary<string, ApiHealthStatus> apiHealthStatus = new Dictionary<string, ApiHealthStatus>();
         // 健康状态缓存时间（5分钟）
         private static readonly TimeSpan healthCacheDuration = TimeSpan.FromMinutes(5);
+        // 健康检测超时时间（5秒）
+        private static readonly TimeSpan healthCheckTimeout = TimeSpan.FromSeconds(5);
         // 锁对象，确保线程安全
         private static readonly object lockObject = new object();
-
+        // 用于健康检测的HttpClient
+        private static readonly HttpClient healthCheckClient = new HttpClient() { Timeout = healthCheckTimeout };
         #endregion
-        #region 公有方法
+
+        #region 软件实例方法
+
         /// <summary>
         /// 获取机器码 cpu+主板+64位盐值 进行验证
         /// </summary>
-        /// <returns>string 返回20位机器码，格式：XXXXX-XXXXX-XXXXX-XXXXX</returns>
-
+        /// <returns>string 返回20字符串机器码，格式：XXXXX-XXXXX-XXXXX-XXXXX-XXXXX</returns>
+        [Obsolete("请使用 GetMachineCodeEx() 以获得更好的机器码，2026年01月01日正式禁用此方法", false)]
         public string GetMachineCode()
         {
             try
@@ -84,11 +81,12 @@ namespace HaiTangUpdate
                 // 生成机器码
                 return GenerateFormattedCode(cpuId, motherboardId);
             }
-            catch (Exception ex)
+            catch
             {
                 return GenerateErrorCode(); // 如果失败生成错误码 这种几率几乎可以忽略不计
             }
         }
+
         /// <summary>
         /// 获取机器码 cpu+主板+64位盐值 进行验证
         /// </summary>
@@ -101,9 +99,11 @@ namespace HaiTangUpdate
                 string cpuId = GetCpuId();
                 string motherboardId = GetMotherboardId();
                 // 生成机器码
-                return GenerateFormattedCodeEx(cpuId, motherboardId);   // 获取512位 128字符串的机器码
+                string composite = $"{cpuId}-{motherboardId}-{Salt}";
+
+                return ShaHasher.Sha512(composite);
             }
-            catch (Exception ex)
+            catch
             {
                 return GenerateErrorCode(); // 如果失败生成错误码 这种几率几乎可以忽略不计
             }
@@ -120,7 +120,7 @@ namespace HaiTangUpdate
             string _result;
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode();
+                Code = GetMachineCodeEx();
             }
             _result = await ExecuteApiRequest(async (apiUrl) =>
             {
@@ -132,24 +132,28 @@ namespace HaiTangUpdate
                     HttpResponseMessage response = await httpClient.GetAsync(requestUrl);
                     if (!response.IsSuccessStatusCode)
                     {
-                        throw new Exception($"请求失败！HTTP状态码: {response.StatusCode}");
-                    }
-
-                    // 读取响应内容
-                    string jsonString = await response.Content.ReadAsStringAsync();
-                    Json _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
-
-                    try
-                    {
-                        // 尝试解密数据，失败则直接返回 false
-                        string JsonData = AesDecrypt(_JsonData.data, key);
-                        Json _Data = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return _Data.User != null ? "true" : "false";
-                    }
-                    catch
-                    {
                         return "false";
                     }
+                    else
+                    {
+                        // 读取响应内容
+                        string jsonString = await response.Content.ReadAsStringAsync();
+                        JsonMode _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
+
+                        try
+                        {
+                            // 尝试解密数据，失败则直接返回 false
+                            string JsonData = AesDecrypt(_JsonData.data, key);
+                            JsonMode _Data = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                            return _Data.user != null ? "true" : "false";
+                        }
+                        catch
+                        {
+                            return "false";
+                        }
+                    }
+
+
                 }
             });
 
@@ -162,65 +166,61 @@ namespace HaiTangUpdate
         /// <param name="key">OpenID</param>
         /// <param name="Code">机器码，可以省略</param>
         /// <returns>返回 Json 如果 Code 为空，机器码为空时，使用自带的机器码</returns>
-        public async Task<string> GetUpdate(string ID, string key,string Code = null)
+        public async Task<string> GetUpdate(string ID, string key, string Code = null)
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode();
+                Code = GetMachineCodeEx();
             }
-            bool _Check = await GetSoftCheck(ID, key,Code);
-            if (_Check == false)
+            bool _Check = await GetSoftCheck(ID, key, Code);
+            if (_Check == true)
             {
-                return _error;
-            }
-            return await ExecuteApiRequest(async (apiUrl) =>
-            {
-                using (HttpClient httpClient = new())
+                return await ExecuteApiRequest(async (apiUrl) =>
                 {
-                    // 构建请求URL
-                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
-
-                    try
+                    using (HttpClient httpClient = new())
                     {
-                        // 发送GET请求
-                        HttpResponseMessage response = await httpClient.GetAsync(requestUrl);
-                        response.EnsureSuccessStatusCode();
-
-                        // 读取响应内容
-                        string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
-
-                        // 解密数据
-                        //string JsonData = AesDecrypt(_JsonData.data, key);
-                        string JsonData = AesDecrypt(_JsonData.data, key);
-                        
+                        // 构建请求URL
+                        string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
 
                         try
                         {
-                            // 尝试将响应内容解析为 JSON 对象并格式化
-                            var jsonObject = JsonConvert.DeserializeObject(JsonData);
-                            return JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
-                            //return jsonObject.ToString();
+                            // 发送GET请求
+                            HttpResponseMessage response = await httpClient.GetAsync(requestUrl);
+                            response.EnsureSuccessStatusCode();
+                            // 读取响应内容
+                            string jsonString = await response.Content.ReadAsStringAsync();
+                            var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
+
+                            // 解密数据
+                            //string JsonData = AesDecrypt(_JsonData.data, key);
+                            string JsonData = AesDecrypt(_JsonData.data, key);
+
+                            try
+                            {
+                                // 尝试将响应内容解析为 JSON 对象并格式化
+                                var jsonObject = JsonConvert.DeserializeObject(JsonData);
+                                return JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                                //return jsonObject.ToString();
+                            }
+                            catch
+                            {
+                                // 如果解析失败，返回原始内容
+                                return JsonData;
+                            }
+
                         }
                         catch
                         {
-                            // 如果解析失败，返回原始内容
-                            return JsonData;
+                            return _error;
                         }
 
                     }
-                    catch (HttpRequestException ex)
-                    {
-                        // 处理HTTP请求异常
-                        throw new Exception($"获取软件全部信息失败: {ex.Message}");
-                    }
-                    catch (Exception ex)
-                    {
-                        // 处理其他异常
-                        throw new Exception($"处理软件全部信息时出错: {ex.Message}");
-                    }
-                }
-            });
+                });
+            }
+            else 
+            { 
+                return _error;
+            }
         }
         /// <summary>
         /// 获取软件实例ID （ 程序实例ID，OpenID，机器码 [null] ）
@@ -233,7 +233,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode();
+                Code = GetMachineCodeEx();
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -255,14 +255,14 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.SoftwareID;
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        return result.softwareId;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -276,7 +276,7 @@ namespace HaiTangUpdate
                     }
                 }
             });
-     
+
         }
         /// <summary>
         /// 获取软件版本 （ 程序实例ID，OpenID，机器码 [null] ）
@@ -289,7 +289,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode();
+                Code = GetMachineCodeEx();
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -311,14 +311,14 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.VersionNumber;
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        return result.versionNumber;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -344,7 +344,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode();
+                Code = GetMachineCodeEx();
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -366,14 +366,14 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.SoftwareName;
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        return result.softwareName;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -399,7 +399,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -421,14 +421,14 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.VersionInformation;
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        return result.versionInformation;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -441,7 +441,7 @@ namespace HaiTangUpdate
                         throw new Exception($"处理软件更新内容时出错: {ex.Message}");
                     }
                 }
-            });  
+            });
         }
         /// <summary>
         /// 获取软件公告 （ 程序实例ID，OpenID，机器码 [null] ）
@@ -454,7 +454,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -476,14 +476,14 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.Notice;
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        return result.notice;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -496,7 +496,7 @@ namespace HaiTangUpdate
                         throw new Exception($"处理软件公告时出错: {ex.Message}");
                     }
                 }
-            });     
+            });
         }
         /// <summary>
         /// 获取软件下载链接 （ 程序实例ID，OpenID，机器码 [null] ）
@@ -509,7 +509,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -531,14 +531,14 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.DownloadLink;
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        return result.downloadLink;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -551,7 +551,7 @@ namespace HaiTangUpdate
                         throw new Exception($"处理软件下载链接时出错: {ex.Message}");
                     }
                 }
-            });   
+            });
         }
         /// <summary>
         /// 获取软件访问量 （ 程序实例ID，OpenID，机器码 [null] ）
@@ -564,7 +564,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -586,14 +586,14 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.NumberOfVisits;
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        return result.numberOfVisits;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -606,7 +606,7 @@ namespace HaiTangUpdate
                         throw new Exception($"处理软件访问量时出错: {ex.Message}");
                     }
                 }
-            });    
+            });
         }
         /// <summary>
         /// 获取软件最低版本号 （ 程序实例ID，OpenID，机器码 [null] ）
@@ -619,7 +619,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -641,14 +641,14 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.MiniVersion;
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        return result.miniVersion;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -661,7 +661,7 @@ namespace HaiTangUpdate
                         throw new Exception($"处理软件最低版本号时出错: {ex.Message}");
                     }
                 }
-            });  
+            });
         }
         /// <summary>
         /// 获取卡密状（ 程序实例ID，OpenID，机器码 ）
@@ -674,7 +674,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -696,14 +696,14 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.IsItEffective;
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        return result.isItEffective;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -737,7 +737,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -760,23 +760,23 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        if (_IsItEffective == true && string.IsNullOrEmpty(result.ExpirationDate))
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        if (_IsItEffective == true && string.IsNullOrEmpty(result.expirationDate))
                         {
 
                             return "7258089599000";
                         }
                         else
                         {
-                            return result.ExpirationDate;
+                            return result.expirationDate;
                         }
-                        
+
                     }
                     catch (HttpRequestException ex)
                     {
@@ -789,7 +789,7 @@ namespace HaiTangUpdate
                         throw new Exception($"处理卡密过期时间戳出错: {ex.Message}");
                     }
                 }
-            });  
+            });
         }
         /// <summary>
         /// 获取卡密备注 （ 程序实例ID，OpenID，机器码 ）
@@ -802,7 +802,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -824,14 +824,14 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.NetworkVerificationRemarks;
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        return result.networkVerificationRemarks;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -844,7 +844,7 @@ namespace HaiTangUpdate
                         throw new Exception($"处理卡密备注数据时出错: {ex.Message}");
                     }
                 }
-            });   
+            });
         }
         /// <summary>
         /// 获取卡密有效期类型 （ 程序实例ID，OpenID，机器码 ）
@@ -857,7 +857,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -880,21 +880,21 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        if (_IsItEffective == true && string.IsNullOrEmpty(result.NumberOfDays))
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        if (_IsItEffective == true && string.IsNullOrEmpty(result.numberOfDays))
                         {
 
                             return "99999";
                         }
                         else
                         {
-                            return result.NumberOfDays;
+                            return result.numberOfDays;
                         }
                     }
                     catch (HttpRequestException ex)
@@ -908,7 +908,7 @@ namespace HaiTangUpdate
                         throw new Exception($"处理卡密有效期数据时出错: {ex.Message}");
                     }
                 }
-            });   
+            });
         }
         /// <summary>
         /// 获取卡密ID （ 程序实例ID，OpenID，机器码 ）
@@ -921,7 +921,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -943,14 +943,14 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.NetworkVerificationId;
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        return result.networkVerificationId;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -963,7 +963,7 @@ namespace HaiTangUpdate
                         throw new Exception($"处理卡密ID数据时出错: {ex.Message}");
                     }
                 }
-            });  
+            });
         }
         /// <summary>
         /// 获取服务器时间 （ 程序实例ID，OpenID，机器码 [null] ）
@@ -976,7 +976,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -985,7 +985,7 @@ namespace HaiTangUpdate
             }
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
@@ -1006,22 +1006,22 @@ namespace HaiTangUpdate
                         string jsonString = await response.Content.ReadAsStringAsync();
 
                         // 反序列化JSON
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string decryptedData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化解密后的数据
-                        var result = JsonConvert.DeserializeObject<Json>(decryptedData);
+                        var result = JsonConvert.DeserializeObject<JsonMode>(decryptedData);
 
-                        return result.TimeStamp;
+                        return result.timeStamp;
                     }
                     catch (HttpRequestException httpEx)
                     {
                         // 记录HTTP请求错误
                         throw new Exception($"获取时间戳失败 - 网络请求错误: {httpEx.Message}");
                     }
-                    catch (JsonException jsonEx)
+                    catch (System.Text.Json.JsonException jsonEx)
                     {
                         // 记录JSON解析错误
                         throw new Exception($"获取时间戳失败 - 数据解析错误: {jsonEx.Message}");
@@ -1045,7 +1045,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -1067,14 +1067,14 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.MandatoryUpdate;
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        return result.mandatoryUpdate;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -1108,7 +1108,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
             if (_Check == false)
@@ -1130,14 +1130,14 @@ namespace HaiTangUpdate
 
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
                         string JsonData = AesDecrypt(_JsonData.data, key);
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<Json>(JsonData);
-                        return result.SoftwareMd5;
+                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                        return result.softwareMd5;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -1180,7 +1180,7 @@ namespace HaiTangUpdate
 
                     // 读取响应内容
                     string jsonString = await response.Content.ReadAsStringAsync();
-                    var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                    var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
                     // 解密数据
                     string JsonData = AesDecryptData(_JsonData.data, key);
 
@@ -1214,7 +1214,7 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
             return await ExecuteApiRequest(async (apiUrl) =>
             {
@@ -1274,7 +1274,7 @@ namespace HaiTangUpdate
                 {
                     day,
                     remark,
-                    times = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds
+                    times = (long)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds
                 };
 
                 // 加密数据
@@ -1356,12 +1356,12 @@ namespace HaiTangUpdate
         {
             if (string.IsNullOrEmpty(Code))
             {
-                Code = GetMachineCode(); // 判断机器码是否为空，为空使用默认机器码
+                Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
-            bool _IsItEffective = await GetIsItEffective(ID, key,Code);
+            bool _IsItEffective = await GetIsItEffective(ID, key, Code);
             //string _numberOfDays = await GetNumberOfDays(ID, key, Code);
             string _expirationDate = await GetExpirationDate(ID, key, Code);
-            
+
             try
             {
                 if (_IsItEffective == true && _expirationDate == "7258089599000")
@@ -1372,7 +1372,7 @@ namespace HaiTangUpdate
                 {
                     long lastTimestamp = long.Parse(_expirationDate);
                     long currentTimestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                    long timestamp = (lastTimestamp - currentTimestamp);
+                    long timestamp = lastTimestamp - currentTimestamp;
                     if (timestamp > 0)
                     {
                         return timestamp;
@@ -1387,7 +1387,7 @@ namespace HaiTangUpdate
                     return 1;
                 }
             }
-            catch 
+            catch
             {
                 return 0;
             }
@@ -1414,7 +1414,7 @@ namespace HaiTangUpdate
                     softwareId = ID
                 };
                 // 序列化为 JSON
-                string json = JsonSerializer.Serialize(requestData);
+                string json = System.Text.Json.JsonSerializer.Serialize(requestData);
 
                 // 使用 HttpClient 发送 POST 请求
                 using (HttpClient client = new HttpClient())
@@ -1426,17 +1426,20 @@ namespace HaiTangUpdate
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     // 发送 POST 请求
-                    HttpResponseMessage response = await client.PostAsync(apiUrl+ "/v3/captcha", content);              
+                    HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/captcha", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
-                    var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
+                    var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
                     string JsonData = AesDecryptData(_JsonData.data, key);
 
 
                     return JsonData;
-                    
+
                 }
             });
         }
+        #endregion
+
+        #region 用户方法
         /// <summary>
         /// 用户注册  （ 程序实例ID，邮箱，密码，昵称，验证码）
         /// </summary>
@@ -1447,7 +1450,7 @@ namespace HaiTangUpdate
         /// <param name="nickName">昵称</param>
         /// <param name="captcha">验证码</param>
         /// <returns>返回 布尔类型 True 或 Fales 【昵称，头像，验证码】可空</returns>
-        public async Task<bool> CustomerRegister(string ID,string email, string password,string nickName = null, string avatarUrl = null, string captcha = null)
+        public async Task<bool> CustomerRegister(string ID, string email, string password, string nickName = null, string avatarUrl = null, string captcha = null)
         {
 
             string _data = await ExecuteApiRequest(async (apiUrl) =>
@@ -1455,16 +1458,16 @@ namespace HaiTangUpdate
                 var requestData = new
                 {
                     softwareId = ID,
-                    email = email,
-                    password = password, 
-                    avatarUrl = avatarUrl, 
-                    nickName = nickName, 
-                    captcha = captcha
+                    email,
+                    password,
+                    avatarUrl,
+                    nickName,
+                    captcha
 
                 };
 
                 // 序列化为 JSON
-                string json = JsonSerializer.Serialize(requestData);
+                string json = System.Text.Json.JsonSerializer.Serialize(requestData);
 
                 // 使用 HttpClient 发送 POST 请求
                 using (HttpClient client = new HttpClient())
@@ -1478,10 +1481,10 @@ namespace HaiTangUpdate
                     // 发送 POST 请求
                     HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerRegister", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
-                    var _JsonData = JsonConvert.DeserializeObject<Json>(jsonString);
-                    string JsonData =_JsonData.Success.ToString();
+                    var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
+                    string JsonData = _JsonData.Success.ToString();
                     return JsonData;
-                  }
+                }
             });
             return bool.TryParse(_data, out var result) && result;
         }
@@ -1493,7 +1496,7 @@ namespace HaiTangUpdate
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
         /// <returns>返回布尔类型 bool</returns>
-        public async Task<bool> CustomerLogon(string ID,string key, string email, string password)
+        public async Task<bool> CustomerLogon(string ID, string key, string email, string password)
         {
             string _result;
             try
@@ -1504,14 +1507,14 @@ namespace HaiTangUpdate
                     var requestData = new
                     {
                         softwareId = ID,
-                        email = email,
-                        password = password,
+                        email,
+                        password,
                         timeStamp = timestamp
 
                     };
 
                     // 序列化为 JSON
-                    string json = JsonSerializer.Serialize(requestData);
+                    string json = System.Text.Json.JsonSerializer.Serialize(requestData);
 
                     // 使用 HttpClient 发送 POST 请求
                     using (HttpClient client = new HttpClient())
@@ -1532,12 +1535,12 @@ namespace HaiTangUpdate
                         // 检查登录是否成功
                         if (result == null || result.Success == false || result.Data == null || result.Data.CustomerId == null)
                         {
-                            string errorMsg = (result?.Message ?? "未知错误");
-                            return  "false";
+                            string errorMsg = result?.Message ?? "未知错误";
+                            return "false";
                             throw new Exception(errorMsg);
                         }
                         string decryptedData = AesDecryptData(result.Data.TimeCrypt, key);
-                        string okMsg = (result?.Message);
+                        string okMsg = result?.Message;
                         string JsonData = result.Success.ToString();
                         return JsonData;
 
@@ -1572,14 +1575,14 @@ namespace HaiTangUpdate
                 var requestData = new
                 {
                     softwareId = ID,
-                    email = email,
-                    password = password,
+                    email,
+                    password,
                     timeStamp = timestamp
 
                 };
 
                 // 序列化为 JSON
-                string json = JsonSerializer.Serialize(requestData);
+                string json = System.Text.Json.JsonSerializer.Serialize(requestData);
 
                 // 使用 HttpClient 发送 POST 请求
                 using (HttpClient client = new HttpClient())
@@ -1621,14 +1624,14 @@ namespace HaiTangUpdate
                 var requestData = new
                 {
                     softwareId = ID,
-                    email = email,
-                    password = password,
+                    email,
+                    password,
                     timeStamp = timestamp
 
                 };
 
                 // 序列化为 JSON
-                string json = JsonSerializer.Serialize(requestData);
+                string json = System.Text.Json.JsonSerializer.Serialize(requestData);
 
                 // 使用 HttpClient 发送 POST 请求
                 using (HttpClient client = new HttpClient())
@@ -1642,7 +1645,7 @@ namespace HaiTangUpdate
                     // 发送 POST 请求
                     HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
-                    var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);                   
+                    var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
                     string result = _JsonData.Data.CustomerId;
                     return result;
 
@@ -1670,14 +1673,14 @@ namespace HaiTangUpdate
                 var requestData = new
                 {
                     softwareId = ID,
-                    email = email,
-                    password = password,
+                    email,
+                    password,
                     timeStamp = timestamp
 
                 };
 
                 // 序列化为 JSON
-                string json = JsonSerializer.Serialize(requestData);
+                string json = System.Text.Json.JsonSerializer.Serialize(requestData);
 
                 // 使用 HttpClient 发送 POST 请求
                 using (HttpClient client = new HttpClient())
@@ -1719,14 +1722,14 @@ namespace HaiTangUpdate
                 var requestData = new
                 {
                     softwareId = ID,
-                    email = email,
-                    password = password,
+                    email,
+                    password,
                     timeStamp = timestamp
 
                 };
 
                 // 序列化为 JSON
-                string json = JsonSerializer.Serialize(requestData);
+                string json = System.Text.Json.JsonSerializer.Serialize(requestData);
 
                 // 使用 HttpClient 发送 POST 请求
                 using (HttpClient client = new HttpClient())
@@ -1768,14 +1771,14 @@ namespace HaiTangUpdate
                 var requestData = new
                 {
                     softwareId = ID,
-                    email = email,
-                    password = password,
+                    email,
+                    password,
                     timeStamp = timestamp
 
                 };
 
                 // 序列化为 JSON
-                string json = JsonSerializer.Serialize(requestData);
+                string json = System.Text.Json.JsonSerializer.Serialize(requestData);
 
                 // 使用 HttpClient 发送 POST 请求
                 using (HttpClient client = new HttpClient())
@@ -1817,14 +1820,14 @@ namespace HaiTangUpdate
                 var requestData = new
                 {
                     softwareId = ID,
-                    email = email,
-                    password = password,
+                    email,
+                    password,
                     timeStamp = timestamp
 
                 };
 
                 // 序列化为 JSON
-                string json = JsonSerializer.Serialize(requestData);
+                string json = System.Text.Json.JsonSerializer.Serialize(requestData);
 
                 // 使用 HttpClient 发送 POST 请求
                 using (HttpClient client = new HttpClient())
@@ -1839,7 +1842,7 @@ namespace HaiTangUpdate
                     HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
-                    string result =_JsonData.Data.Balance.ToString();
+                    string result = _JsonData.Data.Balance.ToString();
                     return result;
 
                 }
@@ -1863,19 +1866,19 @@ namespace HaiTangUpdate
             string dataJson;
             string _data;
             long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            _data= await ExecuteApiRequest(async (apiUrl) =>
+            _data = await ExecuteApiRequest(async (apiUrl) =>
             {
                 var requestData = new
                 {
                     softwareId = ID,
-                    email = email,
-                    password = password,
+                    email,
+                    password,
                     timeStamp = timestamp
 
                 };
 
                 // 序列化为 JSON
-                string json = JsonSerializer.Serialize(requestData);
+                string json = System.Text.Json.JsonSerializer.Serialize(requestData);
 
                 // 使用 HttpClient 发送 POST 请求
                 using (HttpClient client = new HttpClient())
@@ -1895,7 +1898,7 @@ namespace HaiTangUpdate
                     {
                         return dataJson;
                     }
-                    else 
+                    else
                     {
                         return dataJson;
                     }
@@ -1924,14 +1927,14 @@ namespace HaiTangUpdate
                 var requestData = new
                 {
                     softwareId = ID,
-                    email = email,
-                    password = password,
+                    email,
+                    password,
                     timeStamp = timestamp
 
                 };
 
                 // 序列化为 JSON
-                string json = JsonSerializer.Serialize(requestData);
+                string json = System.Text.Json.JsonSerializer.Serialize(requestData);
 
                 // 使用 HttpClient 发送 POST 请求
                 using (HttpClient client = new HttpClient())
@@ -1950,7 +1953,7 @@ namespace HaiTangUpdate
                     string JsonData = AesDecryptData(_JsonData.Data.TimeCrypt, key);
                     string dataJson = JsonData;
                     return dataJson;
-                }    
+                }
             });
         }
         /// <summary>
@@ -1969,7 +1972,7 @@ namespace HaiTangUpdate
             {
                 return _worring;
             }
-            var _customerId = await GetUserId(ID, key, email, password);         
+            var _customerId = await GetUserId(ID, key, email, password);
             return await ExecuteApiRequest(async (apiUrl) =>
             {
                 var requestData = new
@@ -1979,7 +1982,7 @@ namespace HaiTangUpdate
                 };
 
                 // 序列化为 JSON
-                string json = JsonSerializer.Serialize(requestData);
+                string json = System.Text.Json.JsonSerializer.Serialize(requestData);
 
                 // 使用 HttpClient 发送 POST 请求
                 using (HttpClient client = new HttpClient())
@@ -2000,6 +2003,10 @@ namespace HaiTangUpdate
             });
         }
 
+
+        #endregion
+
+        #region 加密解密
         public string AesEncrypt(object data, string key)
         {
             // 将数据转换为JSON字符串
@@ -2066,13 +2073,12 @@ namespace HaiTangUpdate
                     }
                 }
             }
-            catch (Exception ex)    
+            catch (Exception ex)
             {
-               return ($"程序异常: {ex.Message}");
+                return $"程序异常: {ex.Message}";
             }
 
         }
-
         #endregion
 
         #region 私有方法
@@ -2101,6 +2107,7 @@ namespace HaiTangUpdate
             public bool IsHealthy { get; set; } = true;
             public DateTime LastChecked { get; set; } = DateTime.MinValue;
             public Exception LastError { get; set; }
+            public bool IsChecking { get; set; } // 防止重复检测
         }
 
         /// <summary>
@@ -2111,6 +2118,144 @@ namespace HaiTangUpdate
             foreach (var apiUrl in ApiAddressList)
             {
                 apiHealthStatus[apiUrl] = new ApiHealthStatus();
+            }
+
+            // 启动后台健康检测任务
+            StartBackgroundHealthCheck();
+        }
+
+        /// <summary>
+        /// 启动后台健康检测任务
+        /// </summary>
+        private static void StartBackgroundHealthCheck()
+        {
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    try
+                    {
+                        await CheckAllApisHealthAsync();
+                        // 每30秒检测一次
+                        await Task.Delay(TimeSpan.FromSeconds(30));
+                    }
+                    catch
+                    {
+                        // 忽略后台检测任务的异常
+                        await Task.Delay(TimeSpan.FromSeconds(60));
+                    }
+                }
+            });
+        }
+
+        /// <summary>
+        /// 异步检测所有API的健康状态
+        /// </summary>
+        private static async Task CheckAllApisHealthAsync()
+        {
+            var tasks = new List<Task>();
+
+            foreach (var apiUrl in ApiAddressList)
+            {
+                tasks.Add(CheckApiHealthAsync(apiUrl));
+            }
+
+            await Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// 异步检测单个API的健康状态
+        /// </summary>
+        private static async Task CheckApiHealthAsync(string apiUrl)
+        {
+            var status = apiHealthStatus[apiUrl];
+
+            // 如果正在检测中，跳过
+            if (status.IsChecking)
+                return;
+
+            lock (lockObject)
+            {
+                if (status.IsChecking)
+                    return;
+                status.IsChecking = true;
+            }
+
+            try
+            {
+                bool isHealthy = await PerformHealthCheckAsync(apiUrl);
+
+                lock (lockObject)
+                {
+                    status.IsHealthy = isHealthy;
+                    status.LastChecked = DateTime.Now;
+                    status.LastError = isHealthy ? null : new Exception("健康检测失败");
+                    status.IsChecking = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                lock (lockObject)
+                {
+                    status.IsHealthy = false;
+                    status.LastChecked = DateTime.Now;
+                    status.LastError = ex;
+                    status.IsChecking = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 执行实际的健康检测
+        /// </summary>
+        private static async Task<bool> PerformHealthCheckAsync(string apiUrl)
+        {
+            try
+            {
+                // 尝试访问API的健康检查端点或根路径
+                var healthCheckUrls = new[]
+                {
+            $"{apiUrl}/health",
+            $"{apiUrl}/api/health",
+            $"{apiUrl}/"
+        };
+
+                foreach (var checkUrl in healthCheckUrls)
+                {
+                    try
+                    {
+                        using var cts = new CancellationTokenSource(healthCheckTimeout);
+                        var response = await healthCheckClient.GetAsync(checkUrl, cts.Token);
+
+                        // 如果返回2xx状态码，认为API健康
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return true;
+                        }
+                    }
+                    catch
+                    {
+                        // 尝试下一个URL
+                        continue;
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
+            {
+                // 超时
+                return false;
+            }
+            catch (HttpRequestException)
+            {
+                // 网络请求异常
+                return false;
+            }
+            catch
+            {
+                // 其他异常
+                return false;
             }
         }
 
@@ -2126,6 +2271,7 @@ namespace HaiTangUpdate
                 {
                     return DefaultApiUrl;
                 }
+
                 // 首先检查当前地址是否健康
                 if (IsApiHealthy(OpenApiUrl))
                 {
@@ -2147,13 +2293,13 @@ namespace HaiTangUpdate
                 }
 
                 // 所有备用地址都不健康，回退到默认地址
-                OpenApiUrl = DefaultApiUrl;
-                return DefaultApiUrl;
+                OpenApiUrl = LocalApiUrl;
+                return OpenApiUrl;
             }
         }
 
         /// <summary>
-        /// 检查API地址是否健康（带缓存）
+        /// 检查API地址是否健康（带缓存和实际检测）
         /// </summary>
         private static bool IsApiHealthy(string apiUrl)
         {
@@ -2171,9 +2317,11 @@ namespace HaiTangUpdate
                 return status.IsHealthy;
             }
 
-            // 需要重新检测（实际检测逻辑可以在后台线程中执行）
-            // 这里为了简化，我们假设API是健康的，实际使用时可以实现主动检测
-            return true;
+            // 缓存过期，触发异步重新检测（不等待结果，使用上次的状态）
+            // 检测会在后台进行，下次调用时会使用新的检测结果
+            _ = Task.Run(() => CheckApiHealthAsync(apiUrl));
+
+            return status.IsHealthy; // 返回当前状态，可能不是最新的
         }
 
         /// <summary>
@@ -2190,6 +2338,9 @@ namespace HaiTangUpdate
                 status.LastError = error;
                 status.LastChecked = DateTime.Now;
             }
+
+            // 触发异步重新检测
+            _ = Task.Run(() => CheckApiHealthAsync(apiUrl));
         }
 
         /// <summary>
@@ -2199,6 +2350,12 @@ namespace HaiTangUpdate
         {
             Exception lastException = null;
             string bestApiUrl = GetBestAvailableApiUrl();
+            // 如果检测到使用本地地址，直接返回null或默认值
+            if (bestApiUrl == LocalApiUrl)
+            {
+                // 直接返回，不执行请求
+                return null; 
+            }
 
             try
             {
@@ -2228,13 +2385,15 @@ namespace HaiTangUpdate
                         }
                     }
                 }
+                // 所有远程地址都失败，返回null
+                return null;
             }
             catch (Exception ex)
             {
                 lastException = ex;
+                return null;
             }
 
-            throw new Exception($"API请求失败。最后错误: {lastException?.Message}", lastException);
         }
 
         // 辅助方法：将十六进制字符串转换为字节数组
@@ -2256,39 +2415,42 @@ namespace HaiTangUpdate
         // 获取CPU信息
         private static string GetCpuId()
         {
-            return GetWmiInfo("Win32_Processor", "ProcessorId") ?? "NA";
+            try
+            {
+                using var searcher = new ManagementObjectSearcher("SELECT ProcessorId FROM Win32_Processor");
+                using var collection = searcher.Get();
+
+                var cpuId = collection.Cast<ManagementObject>()
+                    .Select(mo => mo["ProcessorId"]?.ToString())
+                    .FirstOrDefault(id => !string.IsNullOrEmpty(id));
+
+                return cpuId ?? "UnknownCPU";
+            }
+            catch
+            {
+                return "UnknownCPU";
+            }
         }
         // 获取主板信息
         private static string GetMotherboardId()
         {
-            return GetWmiInfo("Win32_BaseBoard", "SerialNumber") ?? "NA";
-        }
-
-        private static string GetWmiInfo(string className, string propertyName)
-        {
             try
             {
-                var searcher = new ManagementObjectSearcher($"SELECT {propertyName} FROM {className}");
-                foreach (ManagementObject mo in searcher.Get())
-                {
-                    string value = mo[propertyName]?.ToString().Trim();
-                    if (!string.IsNullOrWhiteSpace(value))
-                    {
-                        // 过滤无效值（某些主板返回空或占位符）
-                        if (value.ToUpper() == "NONE" ||
-                            value.ToUpper() == "TO BE FILLED BY O.E.M.")
-                            continue;
+                using var searcher = new ManagementObjectSearcher("SELECT SerialNumber FROM Win32_BaseBoard");
+                using var collection = searcher.Get();
 
-                        return value;
-                    }
-                }
+                var motherboardSn = collection.Cast<ManagementObject>()
+                    .Select(mo => mo["SerialNumber"]?.ToString())
+                    .FirstOrDefault(sn => !string.IsNullOrEmpty(sn));
+
+                return motherboardSn ?? "UnknownMotherboard";
             }
-            catch (ManagementException ex)
+            catch
             {
-
+                return "UnknownMotherboard";
             }
-            return null;
         }
+
         // 生成序列号
         private static string GenerateFormattedCode(string cpuId, string motherboardId)
         {
@@ -2304,21 +2466,13 @@ namespace HaiTangUpdate
             // 确保20字符长度
             hash = hash.Length >= 20 ?
                    hash.Substring(0, 20) :
-                   hash.PadRight(20, '0');
+                   hash.PadRight(25, '0');
 
             // 5字符分段格式化
             return $"{hash.Substring(0, 5)}-{hash.Substring(5, 5)}-{hash.Substring(10, 5)}-{hash.Substring(15, 5)}";
         }
-        // 如果生成机器码失败，则生成带时间戳的错误码（示例：ERR-2025-0329-ABCDE）  这个就是不必要担心，
-        // 毕竟cpu+主板怎么可能两个都失败
-        private static string GenerateFormattedCodeEx(string cpuId, string motherboardId)
-        {
-            // 组合硬件信息
-            string composite = $"{cpuId}-{motherboardId}-{Salt}";
 
-            return ShaHasher.Sha512(composite);
-        }
-       
+
         private static string GenerateErrorCode()
         {
 
@@ -2363,7 +2517,7 @@ namespace HaiTangUpdate
                     byte[] ansiBytes = Encoding.Default.GetBytes(utf8Result);
                     var json = Encoding.Default.GetString(ansiBytes);
                     var parsedJson = JsonConvert.DeserializeObject(json);
-                    return JsonConvert.SerializeObject(parsedJson, Newtonsoft.Json.Formatting.Indented);
+                    return JsonConvert.SerializeObject(parsedJson, Formatting.Indented);
                 }
             }
         }
