@@ -1,10 +1,7 @@
 ﻿### 这个是为 2018k 在线更新模块写的一个库
+
  **如果有需要的小伙伴，可以自行去 [https://2018k.cn/](https://2018k.cn/) 申请一个OpenID，然后调用我这里的方法就可以了	** 
- **
-    添加程序集引用，并 using HaiTang.library;
-    // 首先实例化
-	HaiTang.library.Update up = new();
-**
+
 
  ```csharp
 	添加程序集引用，并 using HaiTang.library;
