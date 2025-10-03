@@ -1,7 +1,13 @@
 ﻿### 这个是为 2018k 在线更新模块写的一个库
  **如果有需要的小伙伴，可以自行去 [https://2018k.cn/](https://2018k.cn/) 申请一个OpenID，然后调用我这里的方法就可以了	** 
+ **
+    添加程序集引用，并 using HaiTang.library;
+    // 首先实例化
+	HaiTang.library.Update up = new();
+**
+
  ```csharp
-	添加程序集引用，冰using HaiTang.library;
+	添加程序集引用，并 using HaiTang.library;
     // 首先实例化
 	HaiTang.library.Update up = new();
         
@@ -138,9 +144,13 @@
 新增2018k的Mysoft的Json的操作和读写更新
 
 ```csharp
-
+ 添加程序集引用，并 using HaiTang.library;
+ // 首先实例化
+ HaiTang.library.Update up = new();
  JsonConfigManager configManager = new JsonConfigManager("appsettings.json");
  AppSettingsModel configAsync = new AppSettingsModel();
+
+
 
  string source = await up.GetUpdate(id, key);	//	获取2018k软件信息
  configAsync = await configManager.ConvertFromSourceJson(source);	//	转换 Mysoft 到包含 bool、int、long 类型的Json
@@ -211,10 +221,15 @@
   }
 }
 
-使用 var ConfigAsync = configManager.ReadConfigAsync(); 读取文件并获取对应类型的条目
- ConfigAsync.softwareName
- softwareName.versionInformation
- softwareName.networkVerificationId
+ ConfigAsync = configManager.ReadConfigAsync(); 读取文件并获取对应类型的条目
+ ConfigAsync.softwareName   // 返回软件名字  string
+ ConfigAsync.versionNumber  // 返回软件版本号 string 
+                            // 后续可以通过 Version latestVersion = new(ConfigAsync.versionNumber);
+                            //进行转换为标准版本号
+ ConfigAsync.isItEffective  // 返回是否激活 bool(true or false)
+
+ 另外：通过这种方式调用，只需要访问以此2018k的api，减少了服务器压力，
+ 并且转换后的布尔值为false和true，数字int，和长整数long格式，json已经转换过了
 ```
 
 目前还新增了获取B站用户登录的用户信息，
