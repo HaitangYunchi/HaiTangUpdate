@@ -54,7 +54,7 @@
 	await up.GetUserTimeCrypt(实例ID,OpenID, 邮箱, 密码);			// 验证登录时间戳
 
 	更新了日志记录功能 ，可以记录调用日志到本地文件，方便调试
-	首先using HaiTangUpdate; 
+	首先using HaiTang.library; 
 	在需要记录日志的代码中添加如下代码：
 	Logger.Log($"程序启动", Logger.LogLevel.INFO);				// 其中 INFO 可以替换为 INFO WARN ERROR
 	Logger.Log($"程序启动已完成", Logger.LogLevel.INFO);			// 其中 INFO 可以替换为 INFO WARN ERROR
