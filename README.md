@@ -28,6 +28,8 @@
 	string JsonEncryData = await up.GetUpade("实例ID","你的OpenID","机器码");						// 返回实例所有数据
 	string CloudVar = await up.GetCloudVariables("实例ID", "你的OpenID","云端变量名称");			// 获取你的云变量（变量值）
 
+    await up.updateCloudVariables(实例ID, OpenID, 变量名, 变量值)                                  // 更新云变量
+
 	up.AesDecrypt("加密的data","你的OpenID");			// 返回解密后的数据
 	up.AesEncrypt("待加密数据data","你的OpenID"));		// 返回加密后的数据
 	up.ActivationKey("实例ID","卡密ID","机器码");		// 激活软件
@@ -142,8 +144,7 @@
 
 ```csharp
  添加程序集引用，并 using HaiTang.library;
- // 首先实例化
- HaiTang.library.Update up = new();
+
  JsonConfigManager configManager = new JsonConfigManager("appsettings.json");
  AppSettingsModel configAsync = new AppSettingsModel();
 
@@ -155,37 +156,22 @@
 
  //读取Json
  configAsync = await configManager.ReadConfigAsync();	//读取本地Json文件
- Console.WriteLine($"作者: {config.Mysoft.author}");
- Console.WriteLine($"访问次数: {config.Mysoft.numberOfVisits}");
- Console.WriteLine($"强制更新: {config.Mysoft.mandatoryUpdate}");
+ Console.WriteLine($"作者: {configAsync.Mysoft.author}");
+ Console.WriteLine($"访问次数: {configAsync.Mysoft.numberOfVisits}");
+ Console.WriteLine($"强制更新: {configAsync.Mysoft.mandatoryUpdate}");
 
-
-	// 异步更新 Mysoft 配置
-            await configManager.UpdateMysoftConfigAsync(mysoft =>
-            {
-                config.Mysoft.numberOfVisits = 50000;
-                config.Mysoft.notice = "更新了新的功能";
-                mysoft.numberOfDays = 30;
-            });
 
 	// 显示配置文件内容
         try
         {
             var ConfigAsync = configManager.ReadConfigAsync();
-            string json = JsonSerializer.Serialize(config, new JsonSerializerOptions 
-            { 
-                WriteIndented = true,
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            });
             Console.WriteLine("当前配置文件内容:");
-            Console.WriteLine(json);
+            Console.WriteLine(ConfigAsync);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"显示配置错误: {ex.Message}");
         }
-        #endregion
-
         Console.WriteLine("程序执行完成，按任意键退出...");
         Console.ReadKey();
 
@@ -204,6 +190,7 @@
     "softwareName": "米哈游工具箱",
     "notice": "6.0 版本过场动画key已更新\n更新如下文件",
     "softwareId": "37A1054751AA585BC18A02E799310F53",
+    "downloadLink":"http://download.2018k.cn/upgrade/upgrade-v2.3.zip",
     "versionInformation": "更新部分bug",
     "versionNumber": "2.1.9.42477",
     "numberOfVisits": 39415,
@@ -219,11 +206,11 @@
 }
 
  ConfigAsync = configManager.ReadConfigAsync(); 读取文件并获取对应类型的条目
- ConfigAsync.softwareName   // 返回软件名字  string
- ConfigAsync.versionNumber  // 返回软件版本号 string 
-                            // 后续可以通过 Version latestVersion = new(ConfigAsync.versionNumber);
+ ConfigAsync.Mysoft.softwareName   // 返回软件名字  string
+ ConfigAsync.Mysoft.versionNumber  // 返回软件版本号 string 
+                            // 后续可以通过 Version latestVersion = new(ConfigAsync.Mysoft.versionNumber);
                             //进行转换为标准版本号
- ConfigAsync.isItEffective  // 返回是否激活 bool(true or false)
+ ConfigAsync.Mysoft.isItEffective  // 返回是否激活 bool(true or false)
 
  另外：通过这种方式调用，只需要访问以此2018k的api，减少了服务器压力，
  并且转换后的布尔值为false和true，数字int，和长整数long格式，json已经转换过了

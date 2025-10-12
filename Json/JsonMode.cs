@@ -70,6 +70,7 @@ namespace HaiTang.library.Json
         public string networkVerificationRemarks { get; set; } = string.Empty;
         public int numberOfDays { get; set; } = 0;
         public long expirationDate { get; set; } = 0;
+        public string downloadLink { get; set; } = string.Empty;
         public string notice { get; set; } = string.Empty;
         public string versionInformation { get; set; } = string.Empty;
         public string bilibiliLink { get; set; } = "https://space.bilibili.com/3493128132626725";

@@ -157,6 +157,7 @@ namespace HaiTang.library.up2018
                 numberOfDays = _numberOfDays,
                 networkVerificationRemarks = source.networkVerificationRemarks,
                 expirationDate = _expriationDate,
+                downloadLink = source.downloadLink,
                 notice = source.notice,
                 versionInformation = source.versionInformation,
                 bilibiliLink = "https://space.bilibili.com/3493128132626725"

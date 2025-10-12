@@ -1203,6 +1203,47 @@ namespace HaiTang.library
                 }
             });
         }
+
+        /// <summary>
+        /// 修改云变量，如果变量不存在则新增
+        /// </summary>
+        /// <param name="ID">程序实例ID</param>
+        /// <param name="key">OpenID</param>
+        /// <param name="VarName">云端变量名称</param>
+        /// <param name="VarValue">要设置的变量值</param>
+        /// <returns> 返回json消息</returns>
+        public async Task<string> updateCloudVariables(string ID, string key, string VarKey, string Value)
+        {
+            return await ExecuteApiRequest(async (apiUrl) =>
+            {
+                // 构建JSON对象
+                var data = new JObject
+                {
+                    ["key"] = VarKey,
+                    ["value"] = Value
+                };
+
+                string encryptedData = AesEncrypt(data, key);
+                // 构建请求URL
+                string requestUrl = $"{apiUrl}/v3/updateCloudVariables?info={Uri.EscapeDataString(encryptedData)}&softwareId={ID}&isAPI=y";
+                HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
+                // 获取响应内容并格式化
+                string responseContent = await response.Content.ReadAsStringAsync();
+
+                try
+                {
+                    // 尝试将响应内容解析为 JSON 对象并格式化
+                    var jsonObject = JsonConvert.DeserializeObject(responseContent);
+                    return JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                }
+                catch
+                {
+                    // 如果解析失败，返回原始内容
+                    return responseContent;
+                }
+
+            });
+        }
         /// <summary>
         /// 激活软件  （ 程序实例ID，OpenID，机器码 ）
         /// </summary>
@@ -2396,22 +2437,6 @@ namespace HaiTang.library
 
         }
 
-        // 辅助方法：将十六进制字符串转换为字节数组
-        private static byte[] HexStringToByteArray(string hex)
-        {
-            if (hex.Length % 2 != 0)
-            {
-                throw new ArgumentException("十六进制字符串长度必须是偶数");
-            }
-
-            byte[] bytes = new byte[hex.Length / 2];
-            for (int i = 0; i < hex.Length; i += 2)
-            {
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-            }
-            return bytes;
-        }
-
         // 获取CPU信息
         private static string GetCpuId()
         {
@@ -2520,6 +2545,21 @@ namespace HaiTang.library
                     return JsonConvert.SerializeObject(parsedJson, Formatting.Indented);
                 }
             }
+        }
+        // 辅助方法：将十六进制字符串转换为字节数组
+        private static byte[] HexStringToByteArray(string hex)
+        {
+            if (hex.Length % 2 != 0)
+            {
+                throw new ArgumentException("十六进制字符串长度必须是偶数");
+            }
+
+            byte[] bytes = new byte[hex.Length / 2];
+            for (int i = 0; i < hex.Length; i += 2)
+            {
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            }
+            return bytes;
         }
         private void GenerateKeyAndIV(byte[] saltData, byte[] password, out byte[] key, out byte[] iv)
         {
