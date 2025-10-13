@@ -138,14 +138,14 @@ namespace HaiTang.library
                     {
                         // 读取响应内容
                         string jsonString = await response.Content.ReadAsStringAsync();
-                        JsonMode _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
+                        JsonMode? _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         try
                         {
                             // 尝试解密数据，失败则直接返回 false
-                            string JsonData = AesDecrypt(_JsonData.data, key);
-                            JsonMode _Data = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                            return _Data.user != null ? "true" : "false";
+                            string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
+                            JsonMode? _Data = JsonConvert.DeserializeObject<JsonMode>(JsonData);
+                            return (_Data != null && _Data.user != null) ? "true" : "false";
                         }
                         catch
                         {
@@ -193,7 +193,7 @@ namespace HaiTang.library
 
                             // 解密数据
                             //string JsonData = AesDecrypt(_JsonData.data, key);
-                            string JsonData = AesDecrypt(_JsonData.data, key);
+                            string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                             try
                             {
@@ -258,11 +258,11 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        return result.softwareId;
+                        return result?.softwareId ?? string.Empty;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -314,11 +314,11 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        return result.versionNumber;
+                        return result?.versionNumber ?? string.Empty;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -369,11 +369,11 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        return result.softwareName;
+                        return result?.softwareName ?? string.Empty;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -424,11 +424,11 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        return result.versionInformation;
+                        return result?.versionInformation ?? string.Empty;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -479,11 +479,11 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        return result.notice;
+                        return result?.notice ?? string.Empty;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -534,11 +534,11 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        return result.downloadLink;
+                        return result?.downloadLink ?? string.Empty;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -589,11 +589,11 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        return result.numberOfVisits;
+                        return result?.numberOfVisits ?? string.Empty;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -644,11 +644,11 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        return result.miniVersion;
+                        return result?.miniVersion ?? string.Empty;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -699,11 +699,11 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        return result.isItEffective;
+                        return result?.isItEffective ?? string.Empty;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -717,13 +717,13 @@ namespace HaiTang.library
                     }
                 }
             });
-            if (response == "n")
+            if (response == "y")
             {
-                return false;
+                return true;
             }
             else
             {
-                return true;
+                return false;
             }
         }
         /// <summary>
@@ -763,18 +763,18 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        if (_IsItEffective == true && string.IsNullOrEmpty(result.expirationDate))
+                        if (_IsItEffective == true && string.IsNullOrEmpty(result?.expirationDate))
                         {
 
                             return "7258089599000";
                         }
                         else
                         {
-                            return result.expirationDate;
+                            return result?.expirationDate ?? string.Empty;
                         }
 
                     }
@@ -827,11 +827,11 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        return result.networkVerificationRemarks;
+                        return result?.networkVerificationRemarks ?? string.Empty;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -883,18 +883,18 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        if (_IsItEffective == true && string.IsNullOrEmpty(result.numberOfDays))
+                        if (_IsItEffective == true && string.IsNullOrEmpty(result?.numberOfDays))
                         {
 
                             return "99999";
                         }
                         else
                         {
-                            return result.numberOfDays;
+                            return result?.numberOfDays ?? string.Empty;
                         }
                     }
                     catch (HttpRequestException ex)
@@ -946,11 +946,11 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        return result.networkVerificationId;
+                        return result?.networkVerificationId ?? string.Empty;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -1009,12 +1009,12 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string decryptedData = AesDecrypt(_JsonData.data, key);
+                        string decryptedData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化解密后的数据
                         var result = JsonConvert.DeserializeObject<JsonMode>(decryptedData);
 
-                        return result.timeStamp;
+                        return result?.timeStamp ?? string.Empty;
                     }
                     catch (HttpRequestException httpEx)
                     {
@@ -1070,11 +1070,11 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string? JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : null;
 
                         // 反序列化最终结果
-                        var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        return result.mandatoryUpdate;
+                        var result = !string.IsNullOrEmpty(JsonData) ? JsonConvert.DeserializeObject<JsonMode>(JsonData) : null;
+                        return result?.mandatoryUpdate ?? string.Empty;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -1088,13 +1088,13 @@ namespace HaiTang.library
                     }
                 }
             });
-            if (response == "n")
+            if (response == "y")
             {
-                return false;
+                return true;
             }
             else
             {
-                return true;
+                return false;
             }
         }
         /// <summary>
@@ -1133,11 +1133,11 @@ namespace HaiTang.library
                         var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
 
                         // 解密数据
-                        string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         // 反序列化最终结果
                         var result = JsonConvert.DeserializeObject<JsonMode>(JsonData);
-                        return result.softwareMd5;
+                        return result?.softwareMd5 ?? string.Empty;
                     }
                     catch (HttpRequestException ex)
                     {
@@ -1182,7 +1182,7 @@ namespace HaiTang.library
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
                     // 解密数据
-                    string JsonData = AesDecryptData(_JsonData.data, key);
+                    string JsonData = _JsonData?.data != null ? AesDecryptData(_JsonData.data, key) : string.Empty;
 
                     // 解析JSON数组
                     JArray jsonArray = JArray.Parse(JsonData);
@@ -1191,8 +1191,8 @@ namespace HaiTang.library
                     // 遍历JSON数据
                     foreach (JObject item in jsonArray)
                     {
-                        string CloudKey = item["key"].ToString();
-                        string CloudValue = item["value"].ToString();
+                        string CloudKey = item["key"]?.ToString() ?? string.Empty;
+                        string CloudValue = item["value"]?.ToString() ?? string.Empty;
                         configList.Add(new KeyValuePair<string, string>(CloudKey, CloudValue));
                     }
 
@@ -1209,40 +1209,39 @@ namespace HaiTang.library
         /// </summary>
         /// <param name="ID">程序实例ID</param>
         /// <param name="key">OpenID</param>
-        /// <param name="VarName">云端变量名称</param>
-        /// <param name="VarValue">要设置的变量值</param>
-        /// <returns> 返回json消息</returns>
-        public async Task<string> updateCloudVariables(string ID, string key, string VarKey, string Value)
-        {
-            return await ExecuteApiRequest(async (apiUrl) =>
+        /// <param name="VarKey">云端变量名称</param>
+        /// <param name="Value">要设置的变量值</param>
+        /// <returns> 返回bool success 和 string message </returns>
+        public async Task<(bool success, string message)> updateCloudVariables(string ID, string key, string VarKey, string Value)
+        {          
+            try
             {
-                // 构建JSON对象
-                var data = new JObject
+                bool _response = await ExecuteApiRequest(async (apiUrl) =>
                 {
-                    ["key"] = VarKey,
-                    ["value"] = Value
-                };
+                    // 构建JSON对象
+                    var data = new JObject
+                    {
+                        ["key"] = VarKey,
+                        ["value"] = Value
+                    };
 
-                string encryptedData = AesEncrypt(data, key);
-                // 构建请求URL
-                string requestUrl = $"{apiUrl}/v3/updateCloudVariables?info={Uri.EscapeDataString(encryptedData)}&softwareId={ID}&isAPI=y";
-                HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
-                // 获取响应内容并格式化
-                string responseContent = await response.Content.ReadAsStringAsync();
-
-                try
-                {
-                    // 尝试将响应内容解析为 JSON 对象并格式化
-                    var jsonObject = JsonConvert.DeserializeObject(responseContent);
-                    return JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
-                }
-                catch
-                {
-                    // 如果解析失败，返回原始内容
-                    return responseContent;
-                }
-
-            });
+                    string encryptedData = AesEncrypt(data, key);
+                    // 构建请求URL
+                    string requestUrl = $"{apiUrl}/v3/updateCloudVariables?info={Uri.EscapeDataString(encryptedData)}&softwareId={ID}&isAPI=y";
+                    HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
+                    // 确保请求成功
+                    response.EnsureSuccessStatusCode();
+                    // 获取响应内容并格式化
+                    string responseContent = await response.Content.ReadAsStringAsync();
+                    var _JsonData = JsonConvert.DeserializeObject<JsonMessage>(responseContent);
+                    return (_JsonData?.success ?? false) ? "true" : "false";
+                }) == "true";
+                return (_response, _response ? $"{{\"key\":\"{VarKey}\",\"value\":\"{Value}\"}}" : $"失败");
+            }
+            catch
+            {
+                return (false, "失败，网络异常或程序错误");
+            }
         }
         /// <summary>
         /// 激活软件  （ 程序实例ID，OpenID，机器码 ）
@@ -1250,28 +1249,38 @@ namespace HaiTang.library
         /// <param name="ID">程序实例ID</param>
         /// <param name="authId">卡密ID</param>
         /// <param name="Code">机器码</param>
-        /// <returns>返回JSON</returns>
-        public async Task<string> ActivationKey(string authId, string ID, string Code)
+        /// <returns>返回bool success 和 string message</returns>
+        public async Task<(bool success, string message)> ActivationKey(string authId, string ID, string Code)
         {
             if (string.IsNullOrEmpty(Code))
             {
                 Code = GetMachineCodeEx(); // 判断机器码是否为空，为空使用默认机器码
             }
-            return await ExecuteApiRequest(async (apiUrl) =>
+            try
             {
-                string url = $"{apiUrl}/v3/activation?authId={authId}&softwareId={ID}&machineCode={Code}&isAPI=y";
-                // 发送 GET 请求
-                HttpResponseMessage response = await _httpClient.GetAsync(url);
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadAsStringAsync();
-            });
+                bool _response = await ExecuteApiRequest(async (apiUrl) =>
+                {
+                    string url = $"{apiUrl}/v3/activation?authId={authId}&softwareId={ID}&machineCode={Code}&isAPI=y";
+                    // 发送 GET 请求
+                    HttpResponseMessage response = await _httpClient.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
+                    string responseContent = await response.Content.ReadAsStringAsync();
+                    var _JsonData = JsonConvert.DeserializeObject<JsonMessage>(responseContent);
+                    return (_JsonData?.success ?? false) ? "true" : "false";
+                }) == "true";
+                return (_response, _response ? "激活成功" : "激活失败，请检查卡密是否正确或已被使用");
+            }
+            catch
+            {
+                return (false, "激活失败，网络异常或程序错误");
+            }
         }
         /// <summary>
         /// 发送消息  （ 程序实例ID，要发送的消息 ）
         /// </summary>
         /// <param name="ID">程序实例ID</param>
         /// <param name="message">要发送的消息</param>
-        /// <returns>不返回消息</returns>
+        /// <returns>返回json</returns>
         public async Task<string> MessageSend(string ID, string message)
         {
             return await ExecuteApiRequest(async (apiUrl) =>
@@ -1350,41 +1359,37 @@ namespace HaiTang.library
         /// <param name="key">OpenID</param>
         /// <param name="AuthId">卡密ID</param>
         /// <param name="Code">机器码</param>
-        /// <returns>返回JSON</returns>
-        public async Task<string> ReplaceBind(string ID, string key, string AuthId, string Code = null)
+        /// <returns>返回bool success 和 string message</returns>
+        public async Task<(bool success, string message)> ReplaceBind(string ID, string key, string AuthId, string Code = null)
         {
-            return await ExecuteApiRequest(async (apiUrl) =>
+            try
             {
-                // 构建请求数据
-                var data = new
+                bool _response = await ExecuteApiRequest(async (apiUrl) =>
                 {
-                    authId = AuthId,
-                    machineCode = Code
-                };
+                    // 构建请求数据
+                    var data = new
+                    {
+                        authId = AuthId,
+                        machineCode = Code
+                    };
+                    // 加密数据
+                    string encodedCiphertext = AesEncrypt(data, key);
+                    // 发送请求
+                    string url = $"{apiUrl}/v3/replaceBind?softwareId={ID}&info={Uri.EscapeDataString(encodedCiphertext)}&isAPI=y";
+                    HttpResponseMessage response = await _httpClient.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
 
-                // 加密数据
-                string encodedCiphertext = AesEncrypt(data, key);
-                // 发送请求
-                string url = $"{apiUrl}/v3/replaceBind?softwareId={ID}&info={Uri.EscapeDataString(encodedCiphertext)}&isAPI=y";
-
-                HttpResponseMessage response = await _httpClient.GetAsync(url);
-                response.EnsureSuccessStatusCode();
-
-                // 获取响应内容并格式化
-                string responseContent = await response.Content.ReadAsStringAsync();
-
-                try
-                {
-                    // 尝试将响应内容解析为 JSON 对象并格式化
-                    var jsonObject = JsonConvert.DeserializeObject(responseContent);
-                    return JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
-                }
-                catch
-                {
-                    // 如果解析失败，返回原始内容
-                    return responseContent;
-                }
-            });
+                    // 获取响应内容并格式化
+                    string responseContent = await response.Content.ReadAsStringAsync();
+                    var _JsonData = JsonConvert.DeserializeObject<JsonMessage>(responseContent);
+                    return (_JsonData?.success ?? false) ? "true" : "false";
+                }) == "true";
+                return  (_response, _response ? "解|换绑成功" : "解|换绑失败，请检查卡密ID是否正确");
+            }
+            catch
+            {
+                return (false, "解绑失败，网络异常或程序错误");
+            }
         }
         /// <summary>
         /// 获取剩余使用时间  （ 程序实例ID，OpenID，机器码 ）
@@ -1470,11 +1475,8 @@ namespace HaiTang.library
                     HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/captcha", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
-                    string JsonData = AesDecryptData(_JsonData.data, key);
-
-
+                    string JsonData = _JsonData?.data != null ? AesDecryptData(_JsonData.data, key) : string.Empty;
                     return JsonData;
-
                 }
             });
         }
@@ -1523,7 +1525,7 @@ namespace HaiTang.library
                     HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerRegister", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
-                    string JsonData = _JsonData.Success.ToString();
+                    string JsonData = (_JsonData != null ? _JsonData.Success.ToString() : "false");
                     return JsonData;
                 }
             });
@@ -1572,7 +1574,7 @@ namespace HaiTang.library
                             Console.WriteLine($"请求失败！HTTP状态码: {response.StatusCode}");
                         }
                         string responseBody = await response.Content.ReadAsStringAsync();
-                        JsonUser result = JsonConvert.DeserializeObject<JsonUser>(responseBody);
+                        JsonUser? result = JsonConvert.DeserializeObject<JsonUser>(responseBody);
                         // 检查登录是否成功
                         if (result == null || result.Success == false || result.Data == null || result.Data.CustomerId == null)
                         {
@@ -1581,8 +1583,8 @@ namespace HaiTang.library
                             throw new Exception(errorMsg);
                         }
                         string decryptedData = AesDecryptData(result.Data.TimeCrypt, key);
-                        string okMsg = result?.Message;
-                        string JsonData = result.Success.ToString();
+                        string? okMsg = result?.Message;
+                        string JsonData = (result != null ? result.Success.ToString() : "false");
                         return JsonData;
 
                     }
@@ -1638,8 +1640,15 @@ namespace HaiTang.library
                     HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
-                    string result = JsonConvert.SerializeObject(_JsonData.Data, Formatting.Indented);
-                    return result;
+                    if (_JsonData?.Data != null)
+                    {
+                        string result = JsonConvert.SerializeObject(_JsonData.Data, Formatting.Indented);
+                        return result;
+                    }
+                    else
+                    {
+                        return _worring;
+                    }
 
                 }
             });
@@ -1687,7 +1696,7 @@ namespace HaiTang.library
                     HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
-                    string result = _JsonData.Data.CustomerId;
+                    string result = _JsonData?.Data?.CustomerId ?? string.Empty;
                     return result;
 
                 }
@@ -1736,7 +1745,7 @@ namespace HaiTang.library
                     HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
-                    string result = _JsonData.Data.AvatarUrl;
+                    string result = _JsonData?.Data?.AvatarUrl ?? string.Empty;
                     return result;
 
                 }
@@ -1785,7 +1794,7 @@ namespace HaiTang.library
                     HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
-                    string result = _JsonData.Data.Nickname;
+                    string result = _JsonData?.Data?.Nickname ?? string.Empty;
                     return result;
 
                 }
@@ -1834,7 +1843,7 @@ namespace HaiTang.library
                     HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
-                    string result = _JsonData.Data.Email;
+                    string result = _JsonData?.Data?.Email ?? string.Empty;
                     return result;
 
                 }
@@ -1844,7 +1853,7 @@ namespace HaiTang.library
         /// 获取账户剩余时长  （ 程序实例ID，OpenID,邮箱，密码）
         /// </summary>
         /// <param name="ID">程序实例ID</param>
-        /// <param name="key">OpenID/param>
+        /// <param name="key">OpenID</param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
         /// <returns>返回string类型</returns>
@@ -1883,7 +1892,7 @@ namespace HaiTang.library
                     HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
-                    string result = _JsonData.Data.Balance.ToString();
+                    string result = _JsonData?.Data?.Balance.ToString() ?? string.Empty;
                     return result;
 
                 }
@@ -1934,7 +1943,7 @@ namespace HaiTang.library
                     HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
-                    dataJson = _JsonData.Data.License;
+                    dataJson = _JsonData?.Data?.License ?? string.Empty;
                     if (dataJson == "y")
                     {
                         return dataJson;
@@ -1990,6 +1999,11 @@ namespace HaiTang.library
                     HttpResponseMessage response = await client.PostAsync(apiUrl + "/v3/customerLogin", content);
                     string jsonString = await response.Content.ReadAsStringAsync();
                     var _JsonData = JsonConvert.DeserializeObject<JsonUser>(jsonString);
+                    // 修复：增加空值检查
+                    if (_JsonData?.Data?.TimeCrypt != null)
+                    {
+                        return _worring;
+                    }
                     // 解密数据
                     string JsonData = AesDecryptData(_JsonData.Data.TimeCrypt, key);
                     string dataJson = JsonData;
@@ -2048,6 +2062,12 @@ namespace HaiTang.library
         #endregion
 
         #region 加密解密
+        /// <summary>
+        /// 使用AES算法加密指定的数据对象。
+        /// </summary>
+        /// <param name="data">要加密的数据对象，将被序列化为JSON字符串。</param>
+        /// <param name="key">加密密钥，十六进制字符串。</param>
+        /// <returns>加密后的Base64字符串。</returns>
         public string AesEncrypt(object data, string key)
         {
             // 将数据转换为JSON字符串
@@ -2081,6 +2101,12 @@ namespace HaiTang.library
                 }
             }
         }
+        /// <summary>
+        /// 使用AES算法解密指定的Base64加密字符串。
+        /// </summary>
+        /// <param name="encryptedData">加密后的Base64字符串。</param>
+        /// <param name="key">解密密钥，十六进制字符串。</param>
+        /// <returns>解密后的字符串，如果解密失败则返回异常信息。</returns>
         public string AesDecrypt(string encryptedData, string key)
         {
 

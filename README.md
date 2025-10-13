@@ -28,18 +28,20 @@
 	string JsonEncryData = await up.GetUpade("实例ID","你的OpenID","机器码");						// 返回实例所有数据
 	string CloudVar = await up.GetCloudVariables("实例ID", "你的OpenID","云端变量名称");			// 获取你的云变量（变量值）
 
-    await up.updateCloudVariables(实例ID, OpenID, 变量名, 变量值)                                  // 更新云变量
+    await up.updateCloudVariables(实例ID, OpenID, 变量名, 变量值)                                   // 更新云变量 返回布尔值和消息
+    await up.ReplaceBind(实例ID, OpenID, 卡密, 机器码)                                             // 卡密换绑 返回布尔值和消息
+    up.ActivationKey("实例ID","卡密ID","机器码");		                                            // 激活软件 返回布尔值和消息
+    await up.CreateNetworkAuthentication("卡密天数", "卡密备注","实例ID","你的OpenID");	            // 创建卡密
 
 	up.AesDecrypt("加密的data","你的OpenID");			// 返回解密后的数据
 	up.AesEncrypt("待加密数据data","你的OpenID"));		// 返回加密后的数据
-	up.ActivationKey("实例ID","卡密ID","机器码");		// 激活软件
 	await up.MessageSend("实例ID", "要发送的消息");	//发送消息
 
 	up.GetMachineCode();	// 获取机器码 cpu+主板 返回20位机器码，格式：XXXXX-XXXXX-XXXXX-XXXXX
 							// 这个方法已经开启屏蔽警告，预计2026-01-01日正式停止调用
 
 	up.GetMachineCodeEx();	// 获取机器码 cpu+主板 返回128位机器码
-	await up.CreateNetworkAuthentication("卡密天数", "卡密备注","实例ID","你的OpenID");	// 创建卡密
+	
 
 	var response = await up.GetNetworkCode(实例ID, OpenID);		// 获取验证码
 	await up.ReplaceBind(实例ID, OpenID,卡密ID, 机器码);			// 卡密换绑（貌似有点小bug，待定）

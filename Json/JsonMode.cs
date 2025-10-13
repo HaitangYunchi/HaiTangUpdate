@@ -74,9 +74,9 @@ namespace HaiTang.library.Json
         public string notice { get; set; } = string.Empty;
         public string versionInformation { get; set; } = string.Empty;
         public string bilibiliLink { get; set; } = "https://space.bilibili.com/3493128132626725";
-        
+
     }
-   
+
     public class UserInfo
     {
         public string CustomerId { get; set; } = string.Empty;
@@ -96,5 +96,11 @@ namespace HaiTang.library.Json
         public string Message { get; set; }
         public UserInfo Data { get; set; }  // 注意：这里不是 string，而是另一个类
     }
+    public class JsonMessage
+    {
+        public int code { get; set; }
+        public bool success { get; set; }
+        public string message { get; set; }
+        public string data { get; set; }
+    }
 }
-
