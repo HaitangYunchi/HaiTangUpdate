@@ -31,13 +31,23 @@ using System.Text;
 
 namespace HaiTang.library
 {
+    /// <summary>
+    /// 提供与软件更新、用户管理、卡密验证、云变量操作等相关的 API 封装方法。
+    /// 支持多 API 地址故障转移、健康检测、加密解密等功能。
+    /// </summary>
     public class Update
     {
         #region 常量定义
-
+        private static readonly Random _random = new();
         private const string Salt = "k3apRuJR2j388Yy5CWxfnXrHkwg3AvUntgVhuUMWBDXDEsyaeX7Ze3QbvmejbqSz"; //生成机器码用的加密盐值
-        public static string _error = "<空>";
-        public static string _worring = "错误：无法获取用户相关信息，请检查登录信息和系统时间是否正确";
+        /// <summary>
+        /// 通用错误信息字符串，表示空或无效结果。
+        /// </summary>
+        public static readonly string _error = "<空>";
+        /// <summary>
+        /// 通用错误信息字符串，表示空或无效结果。
+        /// </summary>
+        public static readonly string _worring = "错误：无法获取用户相关信息，请检查登录信息和系统时间是否正确";
         private readonly HttpClient _httpClient = new HttpClient();
         private const string DefaultApiUrl = "http://api.2018k.cn";
         private static string OpenApiUrl = DefaultApiUrl;
@@ -63,9 +73,7 @@ namespace HaiTang.library
         // 用于健康检测的HttpClient
         private static readonly HttpClient healthCheckClient = new HttpClient() { Timeout = healthCheckTimeout };
         #endregion
-
-        #region 软件实例方法
-
+        #region 本地方法
         /// <summary>
         /// 获取机器码 cpu+主板+64位盐值 进行验证
         /// </summary>
@@ -108,6 +116,41 @@ namespace HaiTang.library
                 return GenerateErrorCode(); // 如果失败生成错误码 这种几率几乎可以忽略不计
             }
         }
+        /// <summary>
+        /// 生成随机字符串 使用方法 GenerateRandomString(生成长度, 模式)
+        /// </summary>
+        /// <param name="length">字符串长度</param>
+        /// <param name="type">
+        /// 0: 字母+数字
+        /// 1: 只有字母
+        /// 2: 只有数字
+        /// 3: 只有大写字母
+        /// 4: 大写字母+数字
+        /// </param>
+        /// <returns>随机字符串</returns>
+        public string GenerateRandomString(int length, int type = 0)
+        {
+            string chars = type switch
+            {
+                1 => "abcdefghijklmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
+                2 => "123456789",
+                3 => "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                4 => "ABCDEFGHJKLMNPQRSTUVWXYZ123456789",
+                _ => "abcdefghijklmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789"
+            };
+
+            var result = new char[length];
+            for (int i = 0; i < length; i++)
+            {
+                result[i] = chars[_random.Next(chars.Length)];
+            }
+
+            return new string(result);
+        }
+        #endregion
+
+        #region 软件实例方法
+
         /// <summary>
         /// 检测实例是否正常 （ 程序实例ID，机器码 [null] ）
         /// </summary>
@@ -1535,7 +1578,7 @@ namespace HaiTang.library
         /// 用户登录  （ 程序实例ID，OpenID,邮箱，密码）
         /// </summary>
         /// <param name="ID">程序实例ID</param>
-        /// <param name="key">OpenID/param>
+        /// <param name="key">OpenID</param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
         /// <returns>返回布尔类型 bool</returns>
@@ -1601,7 +1644,7 @@ namespace HaiTang.library
         /// 获取用户所有信息  （ 程序实例ID，OpenID,邮箱，密码）
         /// </summary>
         /// <param name="ID">程序实例ID</param>
-        /// <param name="key">OpenID/param>
+        /// <param name="key">OpenID</param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
         /// <returns>返回JSON</returns>
@@ -1657,7 +1700,7 @@ namespace HaiTang.library
         /// 获取用户ID  （ 程序实例ID，OpenID,邮箱，密码）
         /// </summary>
         /// <param name="ID">程序实例ID</param>
-        /// <param name="key">OpenID/param>
+        /// <param name="key">OpenID</param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
         /// <returns>返回string类型</returns>
@@ -1706,7 +1749,7 @@ namespace HaiTang.library
         /// 获取用户头像  （ 程序实例ID，OpenID,邮箱，密码）
         /// </summary>
         /// <param name="ID">程序实例ID</param>
-        /// <param name="key">OpenID/param>
+        /// <param name="key">OpenID</param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
         /// <returns>返回string类型</returns>
@@ -1755,7 +1798,7 @@ namespace HaiTang.library
         /// 获取用户昵称  （ 程序实例ID，OpenID,邮箱，密码）
         /// </summary>
         /// <param name="ID">程序实例ID</param>
-        /// <param name="key">OpenID/param>
+        /// <param name="key">OpenID</param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
         /// <returns>返回string类型</returns>
@@ -1804,7 +1847,7 @@ namespace HaiTang.library
         /// 获取用户邮箱  （ 程序实例ID，OpenID,邮箱，密码）
         /// </summary>
         /// <param name="ID">程序实例ID</param>
-        /// <param name="key">OpenID/param>
+        /// <param name="key">OpenID</param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
         /// <returns>返回string类型</returns>
@@ -1902,7 +1945,7 @@ namespace HaiTang.library
         /// 是否授权  （ 程序实例ID，OpenID,邮箱，密码）
         /// </summary>
         /// <param name="ID">程序实例ID</param>
-        /// <param name="key">OpenID/param>
+        /// <param name="key">OpenID</param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
         /// <returns>返回布尔类型</returns>
@@ -1960,7 +2003,7 @@ namespace HaiTang.library
         /// 获取用户登录时间戳 （ 程序实例ID，OpenID,邮箱，密码）
         /// </summary>
         /// <param name="ID">程序实例ID</param>
-        /// <param name="key">OpenID/param>
+        /// <param name="key">OpenID</param>
         /// <param name="email">邮箱</param>
         /// <param name="password">密码</param>
         /// <returns>string 返回时间戳</returns>
