@@ -73,6 +73,7 @@ namespace HaiTang.library
         // 用于健康检测的HttpClient
         private static readonly HttpClient healthCheckClient = new HttpClient() { Timeout = healthCheckTimeout };
         #endregion
+
         #region 本地方法
         /// <summary>
         /// 获取机器码 cpu+主板+64位盐值 进行验证
@@ -117,10 +118,10 @@ namespace HaiTang.library
             }
         }
         /// <summary>
-        /// 生成随机字符串 使用方法 GenerateRandomString(生成长度, 模式)
+        /// 生成随机字符串 使用方法 GenerateRandomString(18, 4)
         /// </summary>
         /// <param name="length">字符串长度</param>
-        /// <param name="type">
+        /// <param name="type">模式
         /// 0: 字母+数字
         /// 1: 只有字母
         /// 2: 只有数字
@@ -132,11 +133,11 @@ namespace HaiTang.library
         {
             string chars = type switch
             {
-                1 => "abcdefghijklmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
+                1 => "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
                 2 => "123456789",
-                3 => "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                3 => "ABCDEFGHJKLMNPQRSTUVWXYZ",
                 4 => "ABCDEFGHJKLMNPQRSTUVWXYZ123456789",
-                _ => "abcdefghijklmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789"
+                _ => "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ123456789"
             };
 
             var result = new char[length];

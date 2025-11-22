@@ -65,6 +65,14 @@
 	ShaHasher.Sha256("待哈希的数据");	// 返回64位字符串哈希后的数据
 	ShaHasher.Sha512("待哈希的数据");	// 返回128位字符串哈希后的数据
 
+    GenerateRandomString(字符串长度,模式)
+    // 生成随机字符串 使用方法 GenerateRandomString(18, 4)
+    // 0: 字母+数字
+    // 1: 只有字母
+    // 2: 只有数字
+    // 3: 只有大写字母
+    // 4: 大写字母+数字
+       
 
     // 获取卡密剩余时间（类型long  返回值：永久-1，过期0，未注册1，其他返回时间戳）
 	long timestamp = up.GetRemainingUsageTime("实例ID", "你的OpenID","机器码");      
