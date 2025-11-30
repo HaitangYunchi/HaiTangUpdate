@@ -17,8 +17,7 @@
  * 时间：
  * 修改说明：
  *
- * 版本：V1.0.1
- *----------------------------------------------------------------*/
+ * 版本：V1.3.6*----------------------------------------------------------------*/
 
 using HaiTang.library.Json;
 using Newtonsoft.Json;
@@ -27,6 +26,7 @@ using System.Management;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text;
+using static System.Net.WebRequestMethods;
 
 
 namespace HaiTang.library
@@ -48,7 +48,7 @@ namespace HaiTang.library
         /// 通用错误信息字符串，表示空或无效结果。
         /// </summary>
         public static readonly string _worring = "错误：无法获取用户相关信息，请检查登录信息和系统时间是否正确";
-        private readonly HttpClient _httpClient = new HttpClient();
+        private readonly HttpClient _httpClient = new();
         private const string DefaultApiUrl = "http://api.2018k.cn";
         private static string OpenApiUrl = DefaultApiUrl;
         private static string LocalApiUrl = "127.0.0.1";
@@ -56,6 +56,7 @@ namespace HaiTang.library
         private static readonly string[] ApiAddressList =
         {
             "http://api.2018k.cn",
+            "http://api.haitangyunchi.cn",
             "http://api2.2018k.cn",
             "http://api3.2018k.cn",
             "http://api4.2018k.cn"
@@ -79,7 +80,7 @@ namespace HaiTang.library
         /// 获取机器码 cpu+主板+64位盐值 进行验证
         /// </summary>
         /// <returns>string 返回20字符串机器码，格式：XXXXX-XXXXX-XXXXX-XXXXX-XXXXX</returns>
-        [Obsolete("请使用 GetMachineCodeEx() 以获得更好的机器码，2026年01月01日正式禁用此方法", false)]
+        [Obsolete("请使用 GetMachineCodeEx() 以获得更好的机器码，2027年01月01日正式禁用此方法", false)]
         public string GetMachineCode()
         {
             try
@@ -217,54 +218,51 @@ namespace HaiTang.library
                 Code = GetMachineCodeEx();
             }
             bool _Check = await GetSoftCheck(ID, key, Code);
-            if (_Check == true)
+            if (_Check == false)
             {
-                return await ExecuteApiRequest(async (apiUrl) =>
+                return _error;
+            }
+            return await ExecuteApiRequest(async (apiUrl) =>
+            {
+                using (HttpClient httpClient = new())
                 {
-                    using (HttpClient httpClient = new())
+                    // 构建请求URL
+                    string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+
+                    try
                     {
-                        // 构建请求URL
-                        string requestUrl = $"{apiUrl}/v3/obtainSoftware?softwareId={ID}&machineCode={Code}&isAPI=y";
+                        // 发送GET请求
+                        HttpResponseMessage response = await httpClient.GetAsync(requestUrl);
+                        response.EnsureSuccessStatusCode();
+                        // 读取响应内容
+                        string jsonString = await response.Content.ReadAsStringAsync();
+                        var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
+
+                        // 解密数据
+                        //string JsonData = AesDecrypt(_JsonData.data, key);
+                        string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
 
                         try
                         {
-                            // 发送GET请求
-                            HttpResponseMessage response = await httpClient.GetAsync(requestUrl);
-                            response.EnsureSuccessStatusCode();
-                            // 读取响应内容
-                            string jsonString = await response.Content.ReadAsStringAsync();
-                            var _JsonData = JsonConvert.DeserializeObject<JsonMode>(jsonString);
-
-                            // 解密数据
-                            //string JsonData = AesDecrypt(_JsonData.data, key);
-                            string JsonData = _JsonData?.data != null ? AesDecrypt(_JsonData.data, key) : string.Empty;
-
-                            try
-                            {
-                                // 尝试将响应内容解析为 JSON 对象并格式化
-                                var jsonObject = JsonConvert.DeserializeObject(JsonData);
-                                return JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
-                                //return jsonObject.ToString();
-                            }
-                            catch
-                            {
-                                // 如果解析失败，返回原始内容
-                                return JsonData;
-                            }
-
+                            // 尝试将响应内容解析为 JSON 对象并格式化
+                            var jsonObject = JsonConvert.DeserializeObject(JsonData);
+                            return JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+                            //return jsonObject.ToString();
                         }
                         catch
                         {
-                            return _error;
+                            // 如果解析失败，返回原始内容
+                            return JsonData;
                         }
 
                     }
-                });
-            }
-            else 
-            { 
-                return _error;
-            }
+                    catch
+                    {
+                        return _error;
+                    }
+
+                }
+            });
         }
         /// <summary>
         /// 获取软件实例ID （ 程序实例ID，OpenID，机器码 [null] ）
@@ -1288,7 +1286,7 @@ namespace HaiTang.library
             }
         }
         /// <summary>
-        /// 激活软件  （ 程序实例ID，OpenID，机器码 ）
+        /// 激活软件  （ 卡密ID，程序实例ID，机器码 ）
         /// </summary>
         /// <param name="ID">程序实例ID</param>
         /// <param name="authId">卡密ID</param>
@@ -2461,17 +2459,19 @@ namespace HaiTang.library
         {
             Exception lastException = null;
             string bestApiUrl = GetBestAvailableApiUrl();
-            // 如果检测到使用本地地址，直接返回null或默认值
+            // 如果检测到使用本地地址，直接返回空字符串，避免返回 null
             if (bestApiUrl == LocalApiUrl)
             {
                 // 直接返回，不执行请求
-                return null; 
+                return string.Empty; 
             }
 
             try
             {
                 // 使用最佳可用地址执行请求
-                return await requestFunc(bestApiUrl);
+                var result = await requestFunc(bestApiUrl);
+                // 如果 result 可能为 null，则返回空字符串
+                return result ?? string.Empty;
             }
             catch (HttpRequestException ex)
             {
@@ -2487,7 +2487,8 @@ namespace HaiTang.library
                     {
                         try
                         {
-                            return await requestFunc(bestApiUrl);
+                            var retryResult = await requestFunc(bestApiUrl);
+                            return retryResult ?? string.Empty;
                         }
                         catch (Exception retryEx)
                         {
@@ -2496,13 +2497,13 @@ namespace HaiTang.library
                         }
                     }
                 }
-                // 所有远程地址都失败，返回null
-                return null;
+                // 所有远程地址都失败，返回空字符串
+                return string.Empty;
             }
             catch (Exception ex)
             {
                 lastException = ex;
-                return null;
+                return string.Empty;
             }
 
         }

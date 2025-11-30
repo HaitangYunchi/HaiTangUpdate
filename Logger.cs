@@ -22,18 +22,29 @@
 
 namespace HaiTang.library
 {
+    /// <summary>
+    /// 提供日志记录功能的静态类。
+    /// </summary>
     public class Logger
     {
         private static readonly object _lock = new object();
         private static readonly string LogDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
 
+        /// <summary>
+        /// 日志级别枚举。
+        /// </summary>
         public enum LogLevel
-        {
+        {  
             INFO,
             WARN,
             ERROR
         }
 
+        /// <summary>
+        /// 记录一条日志信息到日志文件。
+        /// </summary>
+        /// <param name="message">要记录的日志内容。</param>
+        /// <param name="level">日志级别，默认为 INFO。</param>
         public static void Log(string message, LogLevel level = LogLevel.INFO)
         {
             Task.Run(() => // 异步写入避免阻塞UI

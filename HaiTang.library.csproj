@@ -9,7 +9,7 @@
     <AssemblyVersion></AssemblyVersion>
     <TargetFramework>net8.0</TargetFramework>
     <FileVersion></FileVersion>
-    <Version>1.3.5-rc</Version>
+    <Version>1.3.6-rc</Version>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">

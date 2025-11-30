@@ -2,6 +2,31 @@
 
  **如果有需要的小伙伴，可以自行去 [https://2018k.cn/](https://2018k.cn/) 申请一个OpenID，然后调用我这里的方法就可以了	** 
 
+ 2025-11-30 更新说明：
+ - 新增了AES加密解密自动IV+自定义密码+盐值的方法
+ - 新增了生成随机盐值的方法
+ - 新增了获取随机字符串的方法
+ - 更新了日志记录功能 ，可以记录调用日志到本地文件，方便调试、
+ - 新增了SHA256和SHA512哈希方法
+	
+  ```csharp
+        string encrypted = SaltAesEncry.Encrypt("敏感数据", "Password", "salt");
+        string decrypted = SaltAesEncry.Decrypt(encrypted, "Password", "salt");
+        string salt = SaltAesEncry.GenerateSalt(); // 生成64字节盐值
+        string customSalt = SaltAesEncry.GenerateSalt(32); // 生成32字节盐值
+
+        GenerateRandomString(18, 4)     // 生成18位随机字符串，类型4
+        // 0: 字母+数字
+        // 1: 只有字母
+        // 2: 只有数字
+        // 3: 只有大写字母
+        // 4: 大写字母+数字
+
+        Logger.Log($"程序启动", Logger.LogLevel.INFO);				// 其中 INFO 可以替换为 INFO WARN ERROR
+	    Logger.Log($"程序启动已完成", Logger.LogLevel.INFO);			// 其中 INFO 可以替换为 INFO WARN ERROR
+	    ShaHasher.Sha256("待哈希的数据");	// 返回64字符串哈希后的数据
+	    ShaHasher.Sha512("待哈希的数据");	// 返回128字符串哈希后的数据
+   ```
 
  ```csharp
 	添加程序集引用，并 using HaiTang.library;
@@ -56,23 +81,7 @@
 	await up.GetUserBalance(实例ID,OpenID, 邮箱, 密码);			// 获取账户余额（剩余时长）
 	await up.GetUserLicense(实例ID,OpenID, 邮箱, 密码);			// 获取授权信息
 	await up.GetUserTimeCrypt(实例ID,OpenID, 邮箱, 密码);			// 验证登录时间戳
-
-	更新了日志记录功能 ，可以记录调用日志到本地文件，方便调试
-	首先using HaiTang.library; 
-	在需要记录日志的代码中添加如下代码：
-	Logger.Log($"程序启动", Logger.LogLevel.INFO);				// 其中 INFO 可以替换为 INFO WARN ERROR
-	Logger.Log($"程序启动已完成", Logger.LogLevel.INFO);			// 其中 INFO 可以替换为 INFO WARN ERROR
-	ShaHasher.Sha256("待哈希的数据");	// 返回64位字符串哈希后的数据
-	ShaHasher.Sha512("待哈希的数据");	// 返回128位字符串哈希后的数据
-
-    GenerateRandomString(字符串长度,模式)
-    // 生成随机字符串 使用方法 GenerateRandomString(18, 4)
-    // 0: 字母+数字
-    // 1: 只有字母
-    // 2: 只有数字
-    // 3: 只有大写字母
-    // 4: 大写字母+数字
-       
+  
 
     // 获取卡密剩余时间（类型long  返回值：永久-1，过期0，未注册1，其他返回时间戳）
 	long timestamp = up.GetRemainingUsageTime("实例ID", "你的OpenID","机器码");      
